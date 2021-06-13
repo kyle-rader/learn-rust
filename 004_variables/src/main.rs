@@ -20,10 +20,14 @@ fn main() {
     println!("a = {}", a);
 
     let mut foo: u8 = 254;
+
     println!("foo = {}", foo);
     foo += 1;
     println!("foo = {}", foo);
     // An integer overflow
     // foo += 1;
     // println!("foo = {}", foo);
+
+    let check = '✔';
+    println!("check = {}", check);
 }
