@@ -1,3 +1,5 @@
+use std::io;
+
 fn main() {
     println!("Hello, variables!");
 
@@ -33,5 +35,22 @@ fn main() {
 
     let symbols: (char, char, char) = ('✅', '❌', '⚠');
 
-    println!("We have symbols (from a tuple) {}, {}, and {}", symbols.0, symbols.1, symbols.2);
+    println!(
+        "We have symbols (from a tuple) {}, {}, and {}",
+        symbols.0, symbols.1, symbols.2
+    );
+
+    let a = [1, 2, 3, 4, 5];
+    let mut index = String::new();
+
+    io::stdin()
+        .read_line(&mut index)
+        .expect(format!("{} Failed to read line!", symbols.1).as_str());
+
+    let index :usize = index
+        .trim()
+        .parse()
+        .expect(format!("{} Failed to parse index!", symbols.1).as_str());
+
+    println!("Value of array at index {} is {}", index, a[index]);
 }
