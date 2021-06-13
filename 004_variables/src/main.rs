@@ -30,4 +30,8 @@ fn main() {
 
     let check = '✔';
     println!("check = {}", check);
+
+    let symbols: (char, char, char) = ('✅', '❌', '⚠');
+
+    println!("We have symbols (from a tuple) {}, {}, and {}", symbols.0, symbols.1, symbols.2);
 }
