@@ -5,6 +5,8 @@ struct User {
     active: bool,
 }
 
+struct Cord(i32, i32);
+
 fn new_use(email: &str, username: &str) -> User {
     User {
         email: String::from(email),
@@ -28,4 +30,14 @@ fn main() {
 
     let user2 = new_use("jane@doe.com", "jane_doe");
     println!("And user2 {}", user2.username);
+
+    // struct update syntax
+    let user3 = User {
+        email: String::from("bob@gmail.com"),
+        username: String::from("bobo"),
+        ..user1
+    };
+
+    let a = Cord(1, 4);
+    let center = Cord(0,0);
 }
