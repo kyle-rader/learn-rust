@@ -1,3 +1,4 @@
+#[derive(Debug)]
 struct User {
     username: String,
     email: String,
@@ -5,6 +6,7 @@ struct User {
     active: bool,
 }
 
+#[derive(Debug)]
 struct Cord(i32, i32);
 
 fn new_use(email: &str, username: &str) -> User {
@@ -38,6 +40,11 @@ fn main() {
         ..user1
     };
 
+    println!("user3 is {:#?}", user3);
+
     let a = Cord(1, 4);
     let center = Cord(0,0);
+
+    println!("a = {:?} center = {:?}", a, center);
+
 }
