@@ -2,6 +2,11 @@ fn print_string(name: &str, s: &str) {
     println!("{} is '{}' with length {}", name, s, s.len());
 }
 
+fn take_and_return(s: String) -> String {
+    println!("we've taken '{}', and will now give it back.", s);
+    s
+}
+
 fn main() {
     {
         let mut s = String::from("Hello");
@@ -19,7 +24,12 @@ fn main() {
     // print_string("s1", s1); // Doesn't work, because s1 is now invalid!
     print_string("s2", &s2);
 
+    println!("{}", s2);
+
     let mut s3 = s2.clone();
     s3.push_str("defg");
     print_string("s3", &s3);
+
+    s3 = take_and_return(s3);
+    println!("Got back s3: '{}'", s3);
 }
