@@ -9,10 +9,17 @@ fn take_and_return(s: String) -> String {
     s
 }
 
+// Mutable string, that we take ownership of and return the String.
 fn add_stuff(mut s: String) -> String {
     let num = rand::thread_rng().gen_range(1..101);
     s.push_str(&num.to_string());
     s
+}
+
+// Mutable reference to a string, borrow it, but can mutate.
+fn add_stuff_ref(s: &mut String) {
+    let num = rand::thread_rng().gen_range(100..999);
+    s.push_str(&num.to_string());
 }
 
 fn main() {
@@ -39,8 +46,11 @@ fn main() {
     print_string("s3", &s3);
 
     s3 = take_and_return(s3);
-    println!("Got back s3: '{}'", s3);
+    print_string("s3", &s3);
 
     s3 = add_stuff(s3);
-    println!("s3 is now '{}'", s3);
+    print_string("s3", &s3);
+
+    add_stuff_ref(&mut s3);
+    print_string("s3", &s3);
 }
