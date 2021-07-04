@@ -16,7 +16,7 @@ fn main() {
 
     let mut s2 = s1;
     s2.push_str("bc");
-    // println!("s1 is '{}', with length {}", s1, s1.len()); // Doesn't work, because s1 is now invalid!
+    // print_string("s1", s1); // Doesn't work, because s1 is now invalid!
     print_string("s2", &s2);
 
     let mut s3 = s2.clone();
