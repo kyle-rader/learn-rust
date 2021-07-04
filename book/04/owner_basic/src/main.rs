@@ -1,9 +1,17 @@
+use rand::Rng;
+
 fn print_string(name: &str, s: &str) {
     println!("{} is '{}' with length {}", name, s, s.len());
 }
 
 fn take_and_return(s: String) -> String {
     println!("we've taken '{}', and will now give it back.", s);
+    s
+}
+
+fn add_stuff(mut s: String) -> String {
+    let num = rand::thread_rng().gen_range(1..101);
+    s.push_str(&num.to_string());
     s
 }
 
@@ -32,4 +40,7 @@ fn main() {
 
     s3 = take_and_return(s3);
     println!("Got back s3: '{}'", s3);
+
+    s3 = add_stuff(s3);
+    println!("s3 is now '{}'", s3);
 }
