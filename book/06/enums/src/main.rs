@@ -35,4 +35,11 @@ fn main() {
 
     let m = Message::Move { x: 2, y: 5 };
     m.call();
+
+    let x: i32 = 5;
+    let y = Some(15);
+    match y {
+        None => {},
+        Some(y) => println!("{} + {} is {}", x, y, x+y),
+    }
 }
