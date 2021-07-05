@@ -4,6 +4,20 @@ enum IpAddr {
     V6(String),
 }
 
+#[derive(Debug)]
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+impl Message {
+    fn call(&self) {
+        println!("call on {:?}", self);
+    }
+}
+
 fn main() {
     println!("Hello enums!");
 
@@ -14,4 +28,11 @@ fn main() {
     println!("{:?}", home);
     println!("{:?}", router);
     println!("{:?}", loopback);
+
+    let m = Message::Write(String::from("hello message"));
+    println!("m = {:?}", m);
+    m.call();
+
+    let m = Message::Move { x: 2, y: 5 };
+    m.call();
 }
