@@ -18,6 +18,31 @@ impl Message {
     }
 }
 
+#[derive(Debug)]
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter,
+    Dollar,
+}
+
+impl Coin {
+    fn cents(&self) -> u8 {
+        match self {
+            Coin::Penny => 1,
+            Coin::Nickel => 5,
+            Coin::Dime => 10,
+            Coin::Quarter => 25,
+            Coin::Dollar => 100,
+        }
+    }
+
+    fn print_worth(&self) {
+        println!("{:?}: cents: {}", self, self.cents())
+    }
+}
+
 fn main() {
     println!("Hello enums!");
 
@@ -42,4 +67,7 @@ fn main() {
         None => {},
         Some(y) => println!("{} + {} is {}", x, y, x+y),
     }
+
+    let qarter = Coin::Quarter;
+    qarter.print_worth();
 }
