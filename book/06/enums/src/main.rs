@@ -64,8 +64,12 @@ fn main() {
     let x: i32 = 5;
     let y = Some(15);
     match y {
-        None => {},
         Some(y) => println!("{} + {} is {}", x, y, x+y),
+        _ => {},
+    }
+
+    if let Some(val) = y {
+        println!("{} + {} is {}", x+1, val, x+1+val);
     }
 
     let qarter = Coin::Quarter;
