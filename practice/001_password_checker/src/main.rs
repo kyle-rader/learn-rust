@@ -8,7 +8,7 @@ fn check(password: &str) -> bool {
     let mut upper = false;
     let mut special = false;
     let mut digit = false;
-    for (i, c) in password.chars().enumerate() {
+    for c in password.chars() {
         if !lower && c.is_lowercase() {
             lower = true;
         }
@@ -35,4 +35,5 @@ fn check_print(password: &str) {
 fn main() {
     check_print("$ThisIsGood123");
     check_print("badPassword$");
+    check_print("not gonna cut it");
 }
