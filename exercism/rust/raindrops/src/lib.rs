@@ -1,18 +1,14 @@
 pub fn raindrops(n: u32) -> String {
-    let div_by = |d| n % d == 0;
-    let mut result = String::new();
+    let div_by = |d: u32| n % d == 0;
 
-    if div_by(3) {
-        result.push_str("Pling");
+    let result: String = [(3, "Pling"), (5, "Plang"), (7, "Plong")]
+        .iter()
+        .filter(|item| div_by(item.0))
+        .map(|item| item.1)
+        .collect();
+
+    match result.len() {
+        0 => n.to_string(),
+        _ => result
     }
-    if div_by(5) {
-        result.push_str("Plang");
-    }
-    if div_by(7) {
-        result.push_str("Plong");
-    }
-    if result.len() == 0 {
-        result = n.to_string();
-    }
-    result
 }
