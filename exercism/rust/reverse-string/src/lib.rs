@@ -1,7 +1,5 @@
+use unicode_segmentation::UnicodeSegmentation;
+
 pub fn reverse(input: &str) -> String {
-    let mut result = String::new();
-    for c in input.chars() {
-        result.insert(0, c);
-    }
-    result
+    input.graphemes(true).rev().collect()
 }
