@@ -1,10 +1,9 @@
 pub fn raindrops(n: u32) -> String {
     let div_by = |d: u32| n % d == 0;
-
-    let result: String = [(3, "Pling"), (5, "Plang"), (7, "Plong")]
+    let conds = [(3, "Pling"), (5, "Plang"), (7, "Plong")];
+    let result: String = conds
         .iter()
-        .filter(|item| div_by(item.0))
-        .map(|item| item.1)
+        .filter_map(|item| if div_by(item.0) { Some(item.1) } else { None })
         .collect();
 
     match result.len() {
