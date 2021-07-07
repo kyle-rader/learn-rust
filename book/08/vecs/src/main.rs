@@ -21,12 +21,21 @@ fn main() {
         None => println!("v[{}] does not exist!", i),
     };
 
+    let print_vec = |v: &Vec<i32>| {
+        let as_str: String = v.iter()
+            .map(|&i| i.to_string())
+            .collect::<Vec<String>>()
+            .join(", ");
+        println!("{}", as_str);
+    };
+
     print_at(&odds, 2);
     print_at(&evens, 5);
 
-    for x in &evens { // must borrow here if we don't want to move ownership
-        println!("{}", x);
-    }
+    // for x in &evens { // must borrow here if we don't want to move ownership
+    //     println!("{}", x);
+    // }
+    print_vec(&evens);
 
     evens.push(6);
 
@@ -37,11 +46,26 @@ fn main() {
     }
 
     println!("Now odds has:");
-    for i in &odds {
-        println!("{}", i);
-    }
+    print_vec(&odds);
     println!("Now evens has:");
-    for i in &evens {
-        println!("{}", i);
+    print_vec(&evens);
+
+    // Holding different types of items
+    #[derive(Debug)]
+    enum Cell {
+        Int(i32),
+        Float(f64),
+        Text(String),
+    }
+
+    let row = vec![
+        Cell::Int(4),
+        Cell::Text(String::from("blue")),
+        Cell::Float(3.14159),
+    ];
+
+    println!("row has:");
+    for i in &row {
+        println!("{:?}", i);
     }
 }
