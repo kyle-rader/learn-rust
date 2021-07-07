@@ -7,10 +7,14 @@ fn averages(numbers: &Vec<f64>) -> HashMap<&str, f64> {
         sum += i;
     }
 
-    vec![("median", 0.0), ("mean", sum / numbers.len() as f64), ("mode", 0.0)]
-        .iter()
-        .cloned()
-        .collect()
+    vec![
+        ("median", 0.0),
+        ("mean", sum / numbers.len() as f64),
+        ("mode", 0.0),
+    ]
+    .iter()
+    .cloned()
+    .collect()
 }
 
 fn main() {
