@@ -12,3 +12,8 @@ target/
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# Various packaging outputs we probabkly do not want
+*.zip
+*.tar.gz
+*.nupkg
