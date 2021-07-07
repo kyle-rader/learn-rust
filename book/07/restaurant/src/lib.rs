@@ -40,12 +40,14 @@ mod back_of_house {
     }
 }
 
+use front_of_house::hosting;
+
 pub fn eat() {
     // absolute path
-    crate::front_of_house::hosting::add_to_waitlist();
+    // crate::front_of_house::hosting::add_to_waitlist();
 
     // relative path
-    front_of_house::hosting::add_to_waitlist();
+    hosting::add_to_waitlist();
 
     // Order a breakfast
     let mut meal = back_of_house::Breakfast::summer("Wheat");
