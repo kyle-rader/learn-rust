@@ -12,6 +12,12 @@ mod front_of_house {
 }
 
 mod back_of_house {
+    pub enum Appetizer {
+        Soup,
+        Salad,
+        Fries,
+    }
+
     pub struct Breakfast {
         pub toast: String,
         seasonal_fruit: String,
@@ -45,4 +51,6 @@ pub fn eat() {
     let mut meal = back_of_house::Breakfast::summer("Wheat");
     meal.toast = String::from("Sour Dough");
     println!("I'd like {} toast please", meal.toast);
+
+    let order1 = back_of_house::Appetizer::Salad;
 }
