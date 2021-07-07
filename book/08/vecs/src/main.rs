@@ -23,4 +23,25 @@ fn main() {
 
     print_at(&odds, 2);
     print_at(&evens, 5);
+
+    for x in &evens { // must borrow here if we don't want to move ownership
+        println!("{}", x);
+    }
+
+    evens.push(6);
+
+    println!("Let's mutate odds and push to evens");
+    for x in &mut odds {
+        *x += 10;
+        evens.push(*x-1);
+    }
+
+    println!("Now odds has:");
+    for i in &odds {
+        println!("{}", i);
+    }
+    println!("Now evens has:");
+    for i in &evens {
+        println!("{}", i);
+    }
 }
