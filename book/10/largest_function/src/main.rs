@@ -1,9 +1,9 @@
-fn find_largest(numbers: &Vec<i32>) -> i32 {
+fn find_largest(numbers: &[i32]) -> i32 {
     let mut largest = numbers[0];
 
-    for n in numbers {
-        if *n > largest {
-            largest = *n;
+    for &n in numbers {
+        if n > largest {
+            largest = n;
         }
     }
     largest
