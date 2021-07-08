@@ -71,8 +71,9 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "Testing failure states is important")]
     fn asserting_panic() {
+        // panic!("Oops");
         panic!("Testing failure states is important too!");
     }
 }
