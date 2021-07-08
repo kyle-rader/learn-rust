@@ -59,9 +59,14 @@ mod tests {
     }
 
     #[test]
-    fn double_works() {
+    fn double_works() -> Result<(), String> {
         let result = double("abc");
-        assert_eq!(result, "abcabc".to_string());
+        let expected = "abcabc";
+        if result.contains(expected) {
+            Ok(())
+        } else {
+            Err(format!("{} did not contain {}", result, expected))
+        }
     }
 
     #[test]
