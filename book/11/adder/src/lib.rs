@@ -69,4 +69,10 @@ mod tests {
         let result = replicate("a", 3);
         assert_eq!(result, "aaa".to_string());
     }
+
+    #[test]
+    #[should_panic]
+    fn asserting_panic() {
+        panic!("Testing failure states is important too!");
+    }
 }
