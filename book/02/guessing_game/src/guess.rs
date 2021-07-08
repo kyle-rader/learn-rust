@@ -1,5 +1,5 @@
 pub struct Guess {
-    value: i32,
+    value: u32,
 }
 
 impl Guess {
@@ -7,11 +7,11 @@ impl Guess {
         if value < 1 || value > 100 {
             Err(format!("Guess must be between 1 and 100, got {}.", value))
         } else {
-            Ok(Guess { value })
+            Ok(Guess { value: (value as u32) })
         }
     }
 
-    pub fn value(&self) -> i32 {
+    pub fn value(&self) -> u32 {
         self.value
     }
 }
