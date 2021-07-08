@@ -17,15 +17,17 @@ fn main() {
             .expect("Failed to read line");
 
         let guess = match guess.trim().parse() {
-            Ok(num) => match guess::Guess::new(num) {
-                Ok(g) => g,
-                Err(msg) => {
-                    println!("{}", msg);
-                    continue;
-                }
-            },
+            Ok(num) => num,
             Err(_) => {
                 println!("Please type a whole number 😑");
+                continue;
+            }
+        };
+
+        let guess = match guess::Guess::new(guess) {
+            Ok(g) => g,
+            Err(msg) => {
+                println!("{}", msg);
                 continue;
             }
         };
