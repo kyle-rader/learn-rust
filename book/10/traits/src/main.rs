@@ -37,6 +37,23 @@ pub struct BuzzfeedArticle {
 
 impl Summary for BuzzfeedArticle {}
 
+fn notify(item: &impl Summary) {
+    println!("Breaking News! {}", item.summarize());
+}
+
+// or we could use
+fn alert<T: Summary>(item: &T) {
+    println!("Breaking News! {}", item.summarize());
+}
+
+// or we could also use
+fn announce<T>(item: &T)
+where
+    T: Summary,
+{
+    println!("Breaking News! {}", item.summarize());
+}
+
 fn main() {
     println!("Hello, traits!");
 
@@ -47,7 +64,7 @@ fn main() {
         retweet: false,
     };
 
-    println!("1 new tweet: {}", tweet.summarize());
+    notify(&tweet);
 
     let news = NewsArticle {
         headline: "WWII Ends!".to_string(),
@@ -56,12 +73,12 @@ fn main() {
         content: "long string here".to_string(),
     };
 
-    println!("1 new news article: {}", news.summarize());
+    alert(&news);
 
     let buzzfeed_post = BuzzfeedArticle {
         author: "foobar".to_string(),
         content: "the spark notes of NYT article".to_string(),
     };
 
-    println!("1 new Buzzfeed post: {}", buzzfeed_post.summarize());
+    announce(&buzzfeed_post);
 }
