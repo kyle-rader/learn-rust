@@ -14,6 +14,18 @@ fn add_2(a: i32) -> i32 {
     a + 2
 }
 
+fn double(s: &str) -> String {
+    format!("{}{}", s, s)
+}
+
+fn replicate(s: &str, n: i32) -> String {
+    let mut result = String::new();
+    for _ in 0..n {
+        result.push_str(s);
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -44,5 +56,17 @@ mod tests {
     #[test]
     fn add_2_works() {
         assert_eq!(add_2(4), 6);
+    }
+
+    #[test]
+    fn double_works() {
+        let result = double("abc");
+        assert_eq!(result, "abcabc".to_string());
+    }
+
+    #[test]
+    fn replicate_works() {
+        let result = replicate("a", 3);
+        assert_eq!(result, "aaa".to_string());
     }
 }
