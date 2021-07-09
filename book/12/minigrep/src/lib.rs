@@ -1,15 +1,18 @@
 use std::error::Error;
 use std::fs;
 
+#[derive(Debug, PartialEq)]
 pub struct Config {
     pub query: String,
     pub filename: String,
 }
 
+const USAGE: &str = "Not enough arguments!\nUsage: minigrep QUERY FILENAME";
+
 impl Config {
     pub fn new(args: &[String]) -> Result<Config, &str> {
         if args.len() < 3 {
-            return Err("Not enough arguments!\nUsage: minigrep QUERY FILENAME");
+            return Err(USAGE);
         }
 
         let query = args[1].clone();
@@ -43,5 +46,11 @@ mod tests {
         let config = Config::new(&args).expect("shouldn't fail to get args");
         assert_eq!(config.query, "query");
         assert_eq!(config.filename, "filename");
+    }
+
+    #[test]
+    fn config_new_missing_args() {
+        let args = vec!["binary".to_string()];
+        assert_eq!(Config::new(&args), Err(USAGE));
     }
 }
