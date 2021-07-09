@@ -7,6 +7,12 @@ pub struct Config {
     pub filename: String,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct LineMatch<'a> {
+    pub line_number: usize,
+    pub line: &'a str,
+}
+
 const USAGE: &str = "Not enough arguments!\nUsage: minigrep QUERY FILENAME";
 
 impl Config {
@@ -25,15 +31,20 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.filename)?;
 
     for result in search(&config.query, &contents) {
-        println!("{}", result)
+        println!("{}:{}", result.line_number, result.line)
     }
     Ok(())
 }
 
-fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+fn search<'a>(query: &str, contents: &'a str) -> Vec<LineMatch<'a>> {
     contents
         .lines()
-        .filter(|line| line.contains(query))
+        .enumerate()
+        .filter(|(_, line)| line.contains(query))
+        .map(|(line_number, line)| LineMatch {
+            line_number,
+            line,
+        })
         .collect()
 }
 
@@ -66,13 +77,18 @@ mod tests {
     }
 
     #[test]
-    fn one_result() {
-        let query = "duct";
+    fn one_result() -> Result<(), Box<dyn Error>> {
+        let query = "fast";
         let contents = "\
 Rust:
 safe, fast, productive.
 Pick three :)";
 
-        assert_eq!(vec!["safe, fast, productive."], search(query, contents));
+        let results = search(query, contents);
+        let result = results.get(0).ok_or("no match")?;
+
+        assert_eq!(result.line_number, 1);
+        assert_eq!(result.line, "safe, fast, productive.");
+        Ok(())
     }
 }
