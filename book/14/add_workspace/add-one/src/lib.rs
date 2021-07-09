@@ -1,3 +1,5 @@
+use rand::Rng;
+
 /// Add one to a given value
 /// # Examples
 /// ```
@@ -6,6 +8,12 @@
 /// ```
 pub fn one_more(x: i32) -> i32 {
     x + 1
+}
+
+pub fn some_more(x: i32) -> i32 {
+    let mut r = rand::thread_rng();
+    let j = r.gen_range(1..100);
+    x + j
 }
 
 #[cfg(test)]
