@@ -41,10 +41,17 @@ fn search<'a>(query: &str, contents: &'a str) -> Vec<LineMatch<'a>> {
         .lines()
         .enumerate()
         .filter(|(_, line)| line.contains(query))
-        .map(|(line_number, line)| LineMatch {
-            line_number,
-            line,
-        })
+        .map(|(line_number, line)| LineMatch { line_number, line })
+        .collect()
+}
+
+fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<LineMatch<'a>> {
+    let query = query.to_lowercase();
+    contents
+        .lines()
+        .enumerate()
+        .filter(|(_, line)| line.to_lowercase().contains(&query))
+        .map(|(line_number, line)| LineMatch { line_number, line })
         .collect()
 }
 
@@ -89,6 +96,24 @@ Pick three :)";
 
         assert_eq!(result.line_number, 1);
         assert_eq!(result.line, "safe, fast, productive.");
+        Ok(())
+    }
+
+    #[test]
+    fn case_insensitive_search() -> Result<(), Box<dyn Error>> {
+        let query = "RuSt";
+        let contents = "\
+Rust:
+safe, fast, productive.
+Pick three, Trust me!";
+
+        let results = search_case_insensitive(query, contents);
+        assert_eq!(
+            results.len(),
+            2,
+            "There should be 2 results for the case insensitive query for '{}'",
+            query
+        );
         Ok(())
     }
 }
