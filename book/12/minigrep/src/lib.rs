@@ -22,17 +22,19 @@ impl Config {
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    println!("Searching for '{}'", config.query);
-    println!("In file '{}'", config.filename);
-
     let contents = fs::read_to_string(config.filename)?;
 
-    println!("Got text:\n{}", contents);
+    for result in search(&config.query, &contents) {
+        println!("{}", result)
+    }
     Ok(())
 }
 
 fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    vec![]
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 #[cfg(test)]
