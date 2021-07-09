@@ -1,5 +1,5 @@
-use std::fs;
 use std::error::Error;
+use std::fs;
 
 pub struct Config {
     pub query: String,
@@ -28,20 +28,20 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-// #[cfg(test)]
-// mod tests {
-//     #[test]
-//     fn config_new_works() -> Result<(), &str> {
-//         let args = vec![
-//             "binary".to_string(),
-//             "query".to_string(),
-//             "filename".to_string(),
-//         ];
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//         let config = match Config::new(&args) {
-//             Ok(c) => c,
-//             Err(e) => return Err("failed to parse arguments"),
-//         };
+    #[test]
+    fn config_new_works() {
+        let args = vec![
+            "binary".to_string(),
+            "query".to_string(),
+            "filename".to_string(),
+        ];
 
-//     }
-// }
+        let config = Config::new(&args).expect("shouldn't fail to get args");
+        assert_eq!(config.query, "query");
+        assert_eq!(config.filename, "filename");
+    }
+}
