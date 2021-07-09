@@ -50,7 +50,12 @@ mod tests {
 
     #[test]
     fn config_new_missing_args() {
-        let args = vec!["binary".to_string()];
+        // no other args
+        let mut args = vec!["binary".to_string()];
+        assert_eq!(Config::new(&args), Err(USAGE));
+
+        // only 1 arg
+        args.push("arg1".to_string());
         assert_eq!(Config::new(&args), Err(USAGE));
     }
 }
