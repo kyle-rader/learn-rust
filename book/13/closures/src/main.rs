@@ -8,23 +8,16 @@ fn sim_calc(i: u32) -> u32 {
 }
 
 fn generate_workout(intensity: u32, random_number: u32) {
+    let result = sim_calc(intensity);
+
     if intensity < 25 {
-        println!(
-            "Today, do {} pushups!",
-            sim_calc(intensity)
-        );
-        println!(
-            "Next, do {} situps!",
-            sim_calc(intensity)
-        );
+        println!("Today, do {} pushups!", result);
+        println!("Next, do {} situps!", result);
     } else {
         if random_number == 3 {
             println!("Take a break today! Remember to stay hydrated!");
         } else {
-            println!(
-                "Today, run for {} minutes!",
-                sim_calc(intensity)
-            );
+            println!("Today, run for {} minutes!", result);
         }
     }
 }
