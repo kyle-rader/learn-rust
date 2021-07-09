@@ -31,6 +31,10 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    vec![]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -57,5 +61,16 @@ mod tests {
         // only 1 arg
         args.push("arg1".to_string());
         assert_eq!(Config::new(&args), Err(USAGE));
+    }
+
+    #[test]
+    fn one_result() {
+        let query = "duct";
+        let contents = "\
+Rust:
+safe, fast, productive.
+Pick three :)";
+
+        assert_eq!(vec!["safe, fast, productive."], search(query, contents));
     }
 }
