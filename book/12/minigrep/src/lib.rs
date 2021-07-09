@@ -1,6 +1,14 @@
+use std::env;
 use std::error::Error;
 use std::fs;
-use std::env;
+
+const USAGE: &str = "Not enough arguments!\nUsage: minigrep QUERY FILENAME";
+
+#[derive(Debug, PartialEq)]
+pub struct LineMatch<'a> {
+    pub line_number: usize,
+    pub line: &'a str,
+}
 
 #[derive(Debug, PartialEq)]
 pub struct Config {
@@ -9,26 +17,27 @@ pub struct Config {
     pub case_sensitive: bool,
 }
 
-#[derive(Debug, PartialEq)]
-pub struct LineMatch<'a> {
-    pub line_number: usize,
-    pub line: &'a str,
-}
-
-const USAGE: &str = "Not enough arguments!\nUsage: minigrep QUERY FILENAME";
-
 impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &str> {
-        if args.len() < 3 {
-            return Err(USAGE);
-        }
+    pub fn new<T: Iterator<Item = String>>(mut args: T) -> Result<Config, &'static str> {
+        args.next(); // expect to consume first arg of binary name
 
-        let query = args[1].clone();
-        let filename = args[2].clone();
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err(USAGE),
+        };
+
+        let filename = match args.next() {
+            Some(arg) => arg,
+            None => return Err(USAGE),
+        };
 
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
 
-        Ok(Config { query, filename, case_sensitive })
+        Ok(Config {
+            query,
+            filename,
+            case_sensitive,
+        })
     }
 }
 
@@ -77,7 +86,7 @@ mod tests {
             "filename".to_string(),
         ];
 
-        let config = Config::new(&args).expect("shouldn't fail to get args");
+        let config = Config::new(args.into_iter()).expect("shouldn't fail to get args");
         assert_eq!(config.query, "query");
         assert_eq!(config.filename, "filename");
     }
@@ -86,11 +95,12 @@ mod tests {
     fn config_new_missing_args() {
         // no other args
         let mut args = vec!["binary".to_string()];
-        assert_eq!(Config::new(&args), Err(USAGE));
+
+        assert_eq!(Config::new(args.clone().into_iter()), Err(USAGE));
 
         // only 1 arg
         args.push("arg1".to_string());
-        assert_eq!(Config::new(&args), Err(USAGE));
+        assert_eq!(Config::new(args.into_iter()), Err(USAGE));
     }
 
     #[test]
