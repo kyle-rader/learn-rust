@@ -18,6 +18,23 @@ pub struct Config {
 }
 
 impl Config {
+    /// Create a new Config struct.
+    ///
+    /// # Examaples
+    /// ```
+    /// use std::env;
+    ///
+    /// let args = vec![
+    ///     "binary".to_string(),
+    ///     "query".to_string(),
+    ///     "filename".to_string()
+    /// ];
+    ///
+    /// let config = match minigrep::Config::new(args.into_iter()) {
+    ///     Ok(c) => c,
+    ///     Err(e) => panic!("Failed to parse command line args!"),
+    /// };
+    /// ```
     pub fn new<T: Iterator<Item = String>>(mut args: T) -> Result<Config, &'static str> {
         args.next(); // expect to consume first arg of binary name
 
