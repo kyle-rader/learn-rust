@@ -21,4 +21,13 @@ fn main() {
     } else {
         println!("🤮 Failed to join child thread!");
     }
+
+    println!("Using move closures with threads:");
+
+    let v = vec![1, 1, 2, 3, 5, 8];
+    let child_handle = thread::spawn(move || {
+        println!("Our numbers are {:?}", v);
+    });
+
+    child_handle.join().unwrap();
 }
