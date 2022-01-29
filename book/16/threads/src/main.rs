@@ -2,7 +2,7 @@ use std::thread;
 use std::time::Duration;
 
 fn main() {
-    thread::spawn(|| {
+    let child_handle = thread::spawn(|| {
         for i in 1..10 {
             println!("child : {}", i);
             thread::sleep(Duration::from_millis(5));
@@ -15,4 +15,11 @@ fn main() {
         thread::sleep(Duration::from_millis(5));
     }
     println!("parent done.🏁");
+
+    if let Ok(_) = child_handle.join() {
+        println!("Joined child thread!");
+    }
+    else {
+        println!("🤮 Failed to join child thread!");
+    }
 }
