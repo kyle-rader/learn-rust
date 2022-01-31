@@ -1,38 +1,35 @@
 pub struct Post {
-    state: Option<Box<dyn State>>,
+    content: String,
+}
+pub struct DraftPost {
     content: String,
 }
 
 impl Post {
-    pub fn new() -> Post {
-        Post {
-            state: Some(Box::new(Draft {})),
+    pub fn new() -> DraftPost {
+        DraftPost {
             content: String::new(),
         }
     }
 
     pub fn content(&self) -> &str {
-        ""
+        &self.content
     }
+}
 
+impl DraftPost {
     pub fn add_text(&mut self, text: &str) {
         self.content.push_str(text);
     }
 }
-
-trait State {}
-
-struct Draft {}
-
-impl State for Draft {}
 
 #[cfg(test)]
 mod tests {
     use crate::Post;
 
     #[test]
-    fn new_post_has_empty_content() {
-        let p = Post::new();
-        assert_eq!("", p.content(), "New draft post should have no content");
+    fn new_post_can_add_text() {
+        let mut p = Post::new();
+        p.add_text("Some stuff");
     }
 }
