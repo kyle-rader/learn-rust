@@ -29,11 +29,12 @@ fn main() {
         Message::ChangeColor(0, 160, 255),
         Message::Write(String::from("3 points!")),
         Message::ChangeColor(23, 56, 89),
+        Message::Move { x: 5, y: 8 },
         Message::Quit,
     ];
 
     println!("Matching enums!");
-    for msg in msgs {
+    for msg in msgs.iter() {
         match msg {
             Message::Quit => println!("Quit!"),
             Message::Move { x, y } => {
@@ -45,6 +46,31 @@ fn main() {
             }
         }
     }
+
+    println!("Match guards in patterns!");
+    for msg in msgs.iter() {
+        match msg {
+            Message::Move { x, y } if x * y > 5 => {
+                println!("Move x: {}, y: {}", x, y);
+            }
+            _ => println!("Not a move."),
+        }
+    }
+
+    match wisdom() {
+        0 => println!("I haven't celebrated my first birthday yet"),
+        // Could `match` 1 ..= 12 directly but then what age
+        // would the child be? Instead, bind to `n` for the
+        // sequence of 1 ..= 12. Now the age can be reported.
+        n @ 1..=12 => println!("I'm a child of age {:?}", n),
+        n @ 13..=19 => println!("I'm a teen of age {:?}", n),
+        // Nothing bound. Return the result.
+        n => println!("I'm an old person of age {:?}", n),
+    }
+}
+
+fn wisdom() -> u32 {
+    42
 }
 
 enum Message {
