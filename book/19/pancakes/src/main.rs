@@ -8,7 +8,5 @@ struct Pancakes;
 struct Syrup;
 
 fn main() {
-    println!("{}", Pancakes::hello_macro());
-    println!("and");
-    println!("{}", Syrup::hello_macro());
+    println!("{} and {}", Pancakes::hello_macro(), Syrup::hello_macro());
 }
