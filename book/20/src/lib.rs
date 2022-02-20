@@ -1,5 +1,8 @@
 use core::fmt;
-use std::thread;
+use std::{
+    sync::{mpsc, Arc, Mutex},
+    thread::{self, JoinHandle},
+};
 
 #[derive(Debug)]
 pub struct ThreadPoolCreationError(String);
@@ -10,8 +13,28 @@ impl fmt::Display for ThreadPoolCreationError {
     }
 }
 
+struct ThreadPoolWorker {
+    id: usize,
+    thread: JoinHandle<()>,
+}
+
+impl ThreadPoolWorker {
+    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> ThreadPoolWorker {
+        let thread = thread::spawn(move || loop {
+            let job = receiver.lock().unwrap().recv().unwrap();
+            println!("Worker {id} got a job. Executing.");
+            job();
+        });
+
+        ThreadPoolWorker { id, thread }
+    }
+}
+
+type Job = Box<dyn FnOnce() + Send + 'static>;
+
 pub struct ThreadPool {
-    threads: Vec<thread::JoinHandle<()>>,
+    workers: Vec<ThreadPoolWorker>,
+    sender: mpsc::Sender<Job>,
 }
 
 impl ThreadPool {
@@ -28,18 +51,24 @@ impl ThreadPool {
                 "Pool size must be at least 1!",
             ))),
             _ => Ok({
-                let mut threads = Vec::with_capacity(size);
-                for _ in 0..size {
-                    // create some threads and store them in the vector
+                let (sender, receiver) = mpsc::channel();
+                let receiver = Arc::new(Mutex::new(receiver));
+
+                let mut workers = Vec::with_capacity(size);
+                for id in 0..size {
+                    workers.push(ThreadPoolWorker::new(id, Arc::clone(&receiver)));
                 }
-                ThreadPool { threads }
+
+                ThreadPool { workers, sender }
             }),
         }
     }
 
-    pub fn execute<F>(f: F)
+    pub fn execute<F>(&mut self, f: F)
     where
         F: FnOnce() + Send + 'static,
     {
+        let job = Box::new(f);
+        self.sender.send(job).unwrap();
     }
 }

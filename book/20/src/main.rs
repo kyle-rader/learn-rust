@@ -8,7 +8,7 @@ use final_chapter::ThreadPool;
 
 fn main() {
     println!("Hello, servers!");
-    let pool = match ThreadPool::new(4) {
+    let mut pool = match ThreadPool::new(4) {
         Ok(pool) => pool,
         Err(msg) => {
             eprintln!("{msg}");
@@ -26,9 +26,9 @@ fn main() {
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
-        // pool.execute(|| {
-        //     handle_connection(stream);
-        // });
+        pool.execute(|| {
+            handle_connection(stream);
+        });
     }
 }
 
@@ -54,7 +54,11 @@ fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0; 1024];
     stream.read(&mut buffer).unwrap();
 
-    println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
+    let req = String::from_utf8_lossy(&buffer[..]);
+    let parts: Vec<&str> = req.split("\r\n").collect();
+
+
+    println!("Request: {}", parts[0]);
 
     let (status, filename) = if buffer.starts_with(GET_REQUEST) {
         (Status::Ok, "hello.html")
@@ -74,7 +78,7 @@ fn handle_connection(mut stream: TcpStream) {
         content.len()
     );
 
-    println!("Repsonse:--------\n{}\n--------", response);
+    println!("Repsonse: {status}\n");
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
