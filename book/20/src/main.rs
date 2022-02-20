@@ -1,6 +1,7 @@
 use core::fmt;
-use std::io::*;
+use std::{io::*, thread};
 use std::net::{TcpListener, TcpStream};
+use std::time::Duration;
 use std::{fs, process};
 
 fn main() {
@@ -22,6 +23,7 @@ fn main() {
 
 const GET_REQUEST: &[u8] = b"GET / HTTP/1.1\r\n";
 const GET_CSS: &[u8] = b"GET /index.css HTTP/1.1\r\n";
+const GET_SLEEP: &[u8] = b"GET /sleep HTTP/1.1\r\n";
 
 enum Status {
     Ok,
@@ -47,6 +49,9 @@ fn handle_connection(mut stream: TcpStream) {
         (Status::Ok, "hello.html")
     } else if buffer.starts_with(GET_CSS) {
         (Status::Ok, "index.css")
+    } else if buffer.starts_with(GET_SLEEP) {
+        thread::sleep(Duration::from_secs(5));
+        (Status::Ok, "hello.html")
     } else {
         (Status::NotFound, "404.html")
     };
