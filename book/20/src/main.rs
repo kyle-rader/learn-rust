@@ -1,6 +1,6 @@
-use std::net::{TcpListener, TcpStream};
-use std::process;
 use std::io::*;
+use std::net::{TcpListener, TcpStream};
+use std::{fs, process};
 
 fn main() {
     println!("Hello, servers!");
@@ -25,7 +25,13 @@ fn handle_connection(mut stream: TcpStream) {
 
     println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
 
-    let response = "HTTP/1.1 200 OK\r\n\r\n";
+    let content = fs::read_to_string("hello.html").unwrap();
+
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
+        content.len(),
+        content
+    );
 
     println!("Repsonse: {}", response);
     stream.write(response.as_bytes()).unwrap();
