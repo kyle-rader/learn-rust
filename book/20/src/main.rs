@@ -19,13 +19,22 @@ fn main() {
     }
 }
 
+const GET_REQUEST: &[u8] = b"GET / HTTP/1.1\r\n";
+
 fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0; 1024];
     stream.read(&mut buffer).unwrap();
 
     println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
 
-    let content = fs::read_to_string("hello.html").unwrap();
+    let content:String;
+
+    if buffer.starts_with(GET_REQUEST) {
+        content = fs::read_to_string("hello.html").unwrap();
+    }
+    else {
+        content = fs::read_to_string("404.html").unwrap();
+    }
 
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
@@ -33,7 +42,7 @@ fn handle_connection(mut stream: TcpStream) {
         content
     );
 
-    println!("Repsonse: {}", response);
+    println!("Repsonse:--------\n{}\n--------", response);
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
