@@ -4,8 +4,17 @@ use std::net::{TcpListener, TcpStream};
 use std::time::Duration;
 use std::{fs, process};
 
+use final_chapter::ThreadPool;
+
 fn main() {
     println!("Hello, servers!");
+    let pool = match ThreadPool::new(4) {
+        Ok(pool) => pool,
+        Err(msg) => {
+            eprintln!("{msg}");
+            process::exit(1);
+        }
+    };
 
     let listener = match TcpListener::bind("127.0.0.1:7878") {
         Ok(bound_port) => bound_port,
@@ -17,7 +26,9 @@ fn main() {
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
-        handle_connection(stream);
+        // pool.execute(|| {
+        //     handle_connection(stream);
+        // });
     }
 }
 
