@@ -32,7 +32,7 @@ impl fmt::Display for Status {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Status::Ok => write!(f, "200 OK"),
-            Status::NotFound =>write!(f, "404 NOT FOUND"),
+            Status::NotFound => write!(f, "404 NOT FOUND"),
         }
     }
 }
@@ -43,20 +43,15 @@ fn handle_connection(mut stream: TcpStream) {
 
     println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
 
-    let status: Status;
-    let content: String;
-
-    if buffer.starts_with(GET_REQUEST) {
-        status = Status::Ok;
-        content = fs::read_to_string("hello.html").unwrap();
-    }
-    else if buffer.starts_with(GET_CSS) {
-        status = Status::Ok;
-        content = fs::read_to_string("index.css").unwrap();
+    let (status, filename) = if buffer.starts_with(GET_REQUEST) {
+        (Status::Ok, "hello.html")
+    } else if buffer.starts_with(GET_CSS) {
+        (Status::Ok, "index.css")
     } else {
-        status = Status::NotFound;
-        content = fs::read_to_string("404.html").unwrap();
-    }
+        (Status::NotFound, "404.html")
+    };
+
+    let content = fs::read_to_string(filename).unwrap();
 
     let response = format!(
         "HTTP/1.1 {status}\r\nContent-Length: {}\r\n\r\n{content}",
