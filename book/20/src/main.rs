@@ -27,19 +27,20 @@ fn handle_connection(mut stream: TcpStream) {
 
     println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
 
-    let content:String;
+    let status: u16;
+    let content: String;
 
     if buffer.starts_with(GET_REQUEST) {
+        status = 200;
         content = fs::read_to_string("hello.html").unwrap();
-    }
-    else {
+    } else {
+        status = 404;
         content = fs::read_to_string("404.html").unwrap();
     }
 
     let response = format!(
-        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
-        content.len(),
-        content
+        "HTTP/1.1 {status} OK\r\nContent-Length: {}\r\n\r\n{content}",
+        content.len()
     );
 
     println!("Repsonse:--------\n{}\n--------", response);
