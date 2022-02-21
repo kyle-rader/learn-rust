@@ -14,15 +14,10 @@ pub enum LogLevel {
     Error,
 }
 
-impl fmt::Display for LogLevel {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}]", format!("{:?}", self).to_uppercase())
-    }
-}
-
 /// primary function for emitting logs
 pub fn log(level: LogLevel, message: &str) -> String {
-    format!("{level}: {message}")
+    let level = format!("{:?}", level).to_uppercase();
+    format!("[{level}]: {message}")
 }
 pub fn info(message: &str) -> String {
     log(LogLevel::Info, message)
