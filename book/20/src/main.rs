@@ -55,10 +55,9 @@ fn handle_connection(mut stream: TcpStream) {
     stream.read(&mut buffer).unwrap();
 
     let req = String::from_utf8_lossy(&buffer[..]);
-    let parts: Vec<&str> = req.split("\r\n").collect();
-
-
-    println!("Request: {}", parts[0]);
+    if let Some(route) = req.split("\r\n").nth(0) {
+        println!("Request: {route}");
+    }
 
     let (status, filename) = if buffer.starts_with(GET_REQUEST) {
         (Status::Ok, "hello.html")
@@ -71,10 +70,23 @@ fn handle_connection(mut stream: TcpStream) {
         (Status::NotFound, "404.html")
     };
 
+    let content_type = match filename.split('.').last() {
+        Some("html") => "text/html",
+        Some("css") => "text/css",
+        Some(suffix) => {
+            eprintln!("Warning: file suffix '{suffix}' has no matching content-type. Defaulting to text/plain.");
+            "text/plain"
+        },
+        None => {
+            eprintln!("Warning: no file suffix. Defaulting to text/plain.");
+            "text/plain"
+        }
+    };
+
     let content = fs::read_to_string(filename).unwrap();
 
     let response = format!(
-        "HTTP/1.1 {status}\r\nContent-Length: {}\r\nContent-Type: text/html\r\n\r\n{content}",
+        "HTTP/1.1 {status}\r\nContent-Length: {}\r\nContent-Type: {content_type}\r\n\r\n{content}",
         content.len()
     );
 
