@@ -1,13 +1,13 @@
 use core::fmt;
-use std::{io::*, thread};
 use std::net::{TcpListener, TcpStream};
 use std::time::Duration;
 use std::{fs, process};
+use std::{io::*, thread};
 
 use final_chapter::ThreadPool;
 
 fn main() {
-    println!("Hello, servers!");
+    println!("🚀 Starting Server");
     let mut pool = match ThreadPool::new(4) {
         Ok(pool) => pool,
         Err(msg) => {
@@ -16,7 +16,9 @@ fn main() {
         }
     };
 
-    let listener = match TcpListener::bind("127.0.0.1:7878") {
+    let host = "127.0.0.1:7878";
+    println!("🔗 Binding to '{host}'");
+    let listener = match TcpListener::bind(host) {
         Ok(bound_port) => bound_port,
         Err(msg) => {
             eprintln!("Binding to port 7878 failed!\n{}", msg);
@@ -24,7 +26,8 @@ fn main() {
         }
     };
 
-    for stream in listener.incoming().take(2) {
+    println!("📭 Listening for requests.");
+    for stream in listener.incoming().take(4) {
         let stream = stream.unwrap();
         pool.execute(|| {
             handle_connection(stream);
@@ -78,7 +81,7 @@ fn handle_connection(mut stream: TcpStream) {
         Some(suffix) => {
             eprintln!("Warning: file suffix '{suffix}' has no matching content-type. Defaulting to text/plain.");
             "text/plain"
-        },
+        }
         None => {
             eprintln!("Warning: no file suffix. Defaulting to text/plain.");
             "text/plain"
