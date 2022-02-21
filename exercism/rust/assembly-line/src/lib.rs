@@ -3,11 +3,11 @@
 #![allow(unused)]
 
 pub fn production_rate_per_hour(speed: u8) -> f64 {
-    let rate = (speed as f64) * 221.0;
+    221.0 * (speed as f64) *
     match speed {
-        0..=4 => rate,
-        5..=8 => rate * 0.9,
-        9..=10 => rate * 0.77,
+        0..=4 => 1.0,
+        5..=8 => 0.9,
+        9..=10 => 0.77,
         _ => panic!("Unknown speed!"),
     }
 }
