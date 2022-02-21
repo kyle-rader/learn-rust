@@ -17,3 +17,7 @@ target/
 *.zip
 *.tar.gz
 *.nupkg
+
+# Exercism
+exercism/rust/*/HELP.md
+exercism/rust/*/HINTS.md
