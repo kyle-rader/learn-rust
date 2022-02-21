@@ -74,7 +74,7 @@ fn handle_connection(mut stream: TcpStream) {
     let content = fs::read_to_string(filename).unwrap();
 
     let response = format!(
-        "HTTP/1.1 {status}\r\nContent-Length: {}\r\n\r\n{content}",
+        "HTTP/1.1 {status}\r\nContent-Length: {}\r\nContent-Type: text/html\r\n\r\n{content}",
         content.len()
     );
 
