@@ -1,4 +1,3 @@
-pub mod suit;
 use crate::suit::Suit;
 
 #[derive(Debug, PartialEq)]
