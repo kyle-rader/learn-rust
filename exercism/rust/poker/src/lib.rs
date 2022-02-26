@@ -1,5 +1,6 @@
 pub mod suit;
 pub mod card;
+pub mod score;
 
 /// Given a list of poker hands, return a list of those hands which win.
 ///
