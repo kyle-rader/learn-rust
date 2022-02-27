@@ -1,4 +1,5 @@
 pub mod suit;
+pub mod rank;
 pub mod card;
 pub mod score;
 
