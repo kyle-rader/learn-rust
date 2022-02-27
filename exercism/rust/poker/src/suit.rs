@@ -6,14 +6,15 @@ pub enum Suit {
     Spade,
 }
 
-impl From<char> for Suit {
-    fn from(c: char) -> Self {
+impl TryFrom<char> for Suit {
+    type Error = String;
+    fn try_from(c: char) -> Result<Self, Self::Error> {
         match c {
-            'H' | 'h' => Suit::Heart,
-            'D' | 'd' => Suit::Diamond,
-            'C' | 'c' => Suit::Club,
-            'S' | 's' => Suit::Spade,
-            _ => panic!("{c} is an unknown suit!"),
+            'H' | 'h' => Ok(Suit::Heart),
+            'D' | 'd' => Ok(Suit::Diamond),
+            'C' | 'c' => Ok(Suit::Club),
+            'S' | 's' => Ok(Suit::Spade),
+            _ => Err(format!("'{c}' is not a suit!")),
         }
     }
 }
@@ -23,20 +24,21 @@ mod suit_tests {
     use super::*;
 
     #[test]
-    fn suit_from_char() {
-        assert_eq!(Suit::from('C'), Suit::Club);
-        assert_eq!(Suit::from('H'), Suit::Heart);
-        assert_eq!(Suit::from('D'), Suit::Diamond);
-        assert_eq!(Suit::from('S'), Suit::Spade);
-        assert_eq!(Suit::from('c'), Suit::Club);
-        assert_eq!(Suit::from('h'), Suit::Heart);
-        assert_eq!(Suit::from('d'), Suit::Diamond);
-        assert_eq!(Suit::from('s'), Suit::Spade);
+    fn suit_try_from_ok() {
+        assert_eq!(Suit::try_from('C'), Ok(Suit::Club));
+        assert_eq!(Suit::try_from('H'), Ok(Suit::Heart));
+        assert_eq!(Suit::try_from('D'), Ok(Suit::Diamond));
+        assert_eq!(Suit::try_from('S'), Ok(Suit::Spade));
+        assert_eq!(Suit::try_from('c'), Ok(Suit::Club));
+        assert_eq!(Suit::try_from('h'), Ok(Suit::Heart));
+        assert_eq!(Suit::try_from('d'), Ok(Suit::Diamond));
+        assert_eq!(Suit::try_from('s'), Ok(Suit::Spade));
     }
 
     #[test]
-    #[should_panic]
-    fn suit_panics() {
-        let _ = Suit::from('a');
+    fn suit_try_from_err() {
+        let subject = Suit::try_from('A');
+        let expected = Err(String::from("'A' is not a suit!"));
+        assert_eq!(subject, expected);
     }
 }
