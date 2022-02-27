@@ -1,29 +1,53 @@
+use std::str::FromStr;
+
 use crate::suit::Suit;
+use crate::rank::Rank;
 
 #[derive(Debug, PartialEq)]
 struct Card {
-    rank: u8,
+    rank: Rank,
     suit: Suit,
 }
 
-impl From<&str> for Card {
-    fn from(s: &str) -> Self {
-        let rank = if s.len() == 3 {
-            10
-        } else {
-            let c = s.chars().nth(0).unwrap();
-            let n = c as u8 - ('0' as u8);
-            match (c, n) {
-                (_, x @ 1..=9) => x,
-                ('J', _) => 11,
-                ('Q', _) => 12,
-                ('K', _) => 13,
-                ('A', _) => 14,
-                _ => panic!("Unknown rank '{c}'!"),
-            }
+static ERR_INPUT_TOO_SHORT: &str = "Input string is too short!";
+static ERR_INPUT_TOO_LONG: &str = "Input string is too long!";
+
+impl FromStr for Card {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if (0..=1).contains(&s.len()) {
+            return Err(String::from(ERR_INPUT_TOO_SHORT));
+        }
+        else if s.len() > 3 {
+            return Err(String::from(ERR_INPUT_TOO_LONG));
+        }
+
+        let last_char = s.chars().last().unwrap(); // unwrap because we have asserted 
+
+        let suit = match Suit::try_from(last_char) {
+            Ok(s) => s,
+            Err(msg) => return Err(msg),
         };
-        let suit = Suit::from(s.chars().last().unwrap());
-        Card { rank, suit }
+
+        Err(String::from("todo!"))
+
+        // let rank = if s.len() == 3 {
+        //     10
+        // } else {
+        //     let c = s.chars().nth(0).unwrap();
+        //     let n = c as u8 - ('0' as u8);
+        //     match (c, n) {
+        //         (_, x @ 1..=9) => x,
+        //         ('J', _) => 11,
+        //         ('Q', _) => 12,
+        //         ('K', _) => 13,
+        //         ('A', _) => 14,
+        //         _ => Err("Unknown rank '{c}'!"),
+        //     }
+        // };
+
+        // Ok(Card { rank, suit })
     }
 }
 
@@ -32,41 +56,32 @@ mod card_tests {
     use super::*;
 
     #[test]
-    fn card_from_string() {
-        let card = Card::from("4S");
-        assert_eq!(
-            card,
-            Card {
-                rank: 4,
-                suit: Suit::Spade
+    fn try_from_no_chars() {
+        let subject  = "".parse::<Card>();
+        let expected = Err(String::from(ERR_INPUT_TOO_SHORT));
+        assert_eq!(subject, expected);
+    }
+
+    #[test]
+    fn try_from_too_many_chars() {
+        let subject = Card::from_str("4TOOLONG");
+        let expected = Err(String::from(ERR_INPUT_TOO_LONG));
+        assert_eq!(subject, expected);
+    }
+
+    #[test]
+    fn try_from_bad_suit() {
+        let subjects = vec![
+            Card::from_str("3K"),
+            Card::from_str("10Z"),
+            Card::from_str("5Ā"),
+        ];
+
+        for subject in subjects.iter() {
+            match subject {
+                Ok(_) => panic!("Oops, none of these should parse!"),
+                Err(msg) => assert!(msg.ends_with("not a suit!")),
             }
-        );
-    }
-
-    #[test]
-    fn card_with_rank_ten() {
-        let card = Card::from("10S");
-        assert_eq!(card, Card { rank: 10, suit: Suit::Spade });
-    }
-
-    #[test]
-    fn cards_above_ten() {
-        let jack = Card::from("JH");
-        assert_eq!(jack, Card { rank: 11, suit: Suit::Heart});
-    }
-
-    #[test]
-    fn cards_are_not_equal() {
-        let three_of_spades = Card::from("3S");
-        let nine_of_hearts = Card::from("9H");
-        assert_ne!(three_of_spades, nine_of_hearts);
-    }
-
-    #[test]
-    fn cards_can_sort() {
-        let initial: Vec<Card> = vec!["KS", "3D", "8C", "5H", "6H"]
-            .iter()
-            .map(|c| Card::from(*c))
-            .collect();
+        }
     }
 }
