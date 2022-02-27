@@ -12,12 +12,14 @@ struct Card {
 
 #[derive(Debug, PartialEq, Error)]
 enum CardParsingError {
-    #[error("Input string is too short!")]
+    #[error("Error: Input string is too short!")]
     TooShort,
-    #[error("Input string is too long!")]
+    #[error("Error: Input string is too long!")]
     TooLong,
-    #[error("Sub error")]
-    SubError(String),
+    #[error("Sub error: {msg:?}")]
+    SubError {
+        msg: String,
+    },
 }
 
 impl FromStr for Card {
@@ -39,9 +41,9 @@ impl FromStr for Card {
 
         match (rank, suit) {
             (Ok(rank), Ok(suit)) => Ok(Card { rank, suit }),
-            (Ok(_), Err(msg)) => Err(CardParsingError::SubError(msg)),
-            (Err(msg), Ok(_)) => Err(CardParsingError::SubError(msg)),
-            (Err(msg1), Err(msg2)) => Err(CardParsingError::SubError(format!("Errors:\n{msg1}\n{msg2}"))),
+            (Ok(_), Err(msg)) => Err(CardParsingError::SubError { msg }),
+            (Err(msg), Ok(_)) => Err(CardParsingError::SubError { msg }),
+            (Err(msg1), Err(msg2)) => Err(CardParsingError::SubError { msg: format!("{msg1}\n{msg2}") }),
         }
     }
 }
@@ -77,7 +79,7 @@ mod card_tests {
             match subject {
                 Ok(_) => panic!("Oops, none of these should parse!"),
                 Err(err) => match err {
-                    CardParsingError::SubError(msg) => assert!(msg.ends_with("not a suit!")),
+                    CardParsingError::SubError { msg} => assert!(msg.ends_with("not a suit!")),
                     _ => panic!("Wrong kind of parsing error!"),
                 }
             }
