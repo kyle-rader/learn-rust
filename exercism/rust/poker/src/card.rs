@@ -5,13 +5,13 @@ use crate::rank::Rank;
 use crate::suit::Suit;
 
 #[derive(Debug, PartialEq)]
-struct Card {
+pub struct Card {
     rank: Rank,
     suit: Suit,
 }
 
 #[derive(Debug, PartialEq, Error)]
-enum CardParsingError {
+pub enum CardParsingError {
     #[error("Error: Input string is too short!")]
     TooShort,
     #[error("Error: Input string is too long!")]
