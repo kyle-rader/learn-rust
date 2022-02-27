@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use crate::suit::Suit;
 use crate::rank::Rank;
+use crate::suit::Suit;
 
 #[derive(Debug, PartialEq)]
 struct Card {
@@ -18,59 +18,48 @@ impl FromStr for Card {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if (0..=1).contains(&s.len()) {
             return Err(String::from(ERR_INPUT_TOO_SHORT));
-        }
-        else if s.len() > 3 {
+        } else if s.len() > 3 {
             return Err(String::from(ERR_INPUT_TOO_LONG));
         }
 
-        let last_char = s.chars().last().unwrap(); // unwrap because we have asserted 
+        // unwrap the last char because we have asserted above there *is* a last char.
+        let last_char = s.chars().last().unwrap();
 
         let suit = match Suit::try_from(last_char) {
             Ok(s) => s,
             Err(msg) => return Err(msg),
         };
 
-        Err(String::from("todo!"))
+        let rank = match Rank::from_str(&s[0..(s.len()-1)]) {
+            Ok(r) => r,
+            Err(msg) => return Err(msg),
+        };
 
-        // let rank = if s.len() == 3 {
-        //     10
-        // } else {
-        //     let c = s.chars().nth(0).unwrap();
-        //     let n = c as u8 - ('0' as u8);
-        //     match (c, n) {
-        //         (_, x @ 1..=9) => x,
-        //         ('J', _) => 11,
-        //         ('Q', _) => 12,
-        //         ('K', _) => 13,
-        //         ('A', _) => 14,
-        //         _ => Err("Unknown rank '{c}'!"),
-        //     }
-        // };
-
-        // Ok(Card { rank, suit })
+        Ok(Card { rank, suit })
     }
 }
 
 #[cfg(test)]
 mod card_tests {
     use super::*;
+    use test_case::test_case;
 
     #[test]
-    fn try_from_no_chars() {
-        let subject  = "".parse::<Card>();
+    fn from_str_no_chars() {
+        let subject = "".parse::<Card>();
         let expected = Err(String::from(ERR_INPUT_TOO_SHORT));
         assert_eq!(subject, expected);
     }
 
     #[test]
-    fn try_from_too_many_chars() {
+    fn from_str_too_many_chars() {
         let subject = Card::from_str("4TOOLONG");
         let expected = Err(String::from(ERR_INPUT_TOO_LONG));
         assert_eq!(subject, expected);
     }
 
     #[test]
-    fn try_from_bad_suit() {
+    fn from_str_bad_suit() {
         let subjects = vec![
             Card::from_str("3K"),
             Card::from_str("10Z"),
@@ -83,5 +72,18 @@ mod card_tests {
                 Err(msg) => assert!(msg.ends_with("not a suit!")),
             }
         }
+    }
+
+    #[test_case("AH", Rank::Ace, Suit::Heart ; "Ace of Hearts")]
+    #[test_case("2H", Rank::Two, Suit::Heart ; "Two of Spades")]
+    #[test_case("3S", Rank::Three, Suit::Spade ; "Three of Spades")]
+    #[test_case("10C", Rank::Ten, Suit::Club ; "Ten of Clubs")]
+    #[test_case("JD", Rank::Jack, Suit::Diamond ; "Jack of Diamonds")]
+    fn from_str_parses_a_card(subject: &str, rank: Rank, suit: Suit) {
+        let expected = Ok(Card {
+            rank,
+            suit,
+        });
+        assert_eq!(subject.parse(), expected);
     }
 }
