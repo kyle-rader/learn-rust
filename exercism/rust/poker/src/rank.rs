@@ -1,21 +1,18 @@
-use int_enum::IntEnum;
-
-#[repr(u8)]
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, IntEnum, Copy, Clone)]
-enum Rank {
-    Ace = 1,
-    Two = 2,
-    Three = 3,
-    Four = 4,
-    Five = 5,
-    Six = 6,
-    Seven = 7,
-    Eight = 8,
-    Nine = 9,
-    Ten = 10,
-    Jack = 11,
-    Queen = 12,
-    King = 13,
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Rank {
+    Ace,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+    Ten,
+    Jack,
+    Queen,
+    King,
 }
 
 #[cfg(test)]
@@ -23,33 +20,41 @@ mod test {
     use super::*;
 
     #[test]
-    fn rank_from_int() {
-        let jack = Rank::from_int(11);
-        if let Ok(r) = jack {
-            assert_eq!(r, Rank::Jack);
-        }
-    }
+    fn rank_is_sortable() {
+        let expected = vec![
+            Rank::Ace,
+            Rank::Two,
+            Rank::Three,
+            Rank::Four,
+            Rank::Five,
+            Rank::Six,
+            Rank::Seven,
+            Rank::Eight,
+            Rank::Nine,
+            Rank::Ten,
+            Rank::Jack,
+            Rank::Queen,
+            Rank::King,
+        ];
 
-    #[test]
-    #[should_panic]
-    fn rank_from_not_a_rank() {
-        Rank::from_int(0).unwrap();
-    }
+        let mut subject = vec![
+            Rank::King,
+            Rank::Queen,
+            Rank::Jack,
+            Rank::Ten,
+            Rank::Nine,
+            Rank::Eight,
+            Rank::Seven,
+            Rank::Six,
+            Rank::Five,
+            Rank::Four,
+            Rank::Three,
+            Rank::Two,
+            Rank::Ace,
+        ];
 
-    #[test]
-    fn rank_can_sort() {
-        if let Ok(subject) = vec![1, 5, 13, 11, 8]
-            .into_iter()
-            .map(|n| Rank::from_int(n))
-            .collect()
-        {
-            assert_eq!(subject, &[
-                Rank::Ace,
-                Rank::Five,
-                Rank::Eight,
-                Rank::Jack,
-                Rank::King,
-            ]);
-        }
+        subject.sort();
+
+        assert_eq!(subject, expected);
     }
 }
