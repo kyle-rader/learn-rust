@@ -6,8 +6,8 @@ use crate::suit::Suit;
 
 #[derive(Debug, PartialEq)]
 pub struct Card {
-    rank: Rank,
-    suit: Suit,
+    pub rank: Rank,
+    pub suit: Suit,
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -17,9 +17,7 @@ pub enum CardParsingError {
     #[error("Error: Input string is too long!")]
     TooLong,
     #[error("Sub error: {msg:?}")]
-    SubError {
-        msg: String,
-    },
+    SubError { msg: String },
 }
 
 impl FromStr for Card {
@@ -36,14 +34,16 @@ impl FromStr for Card {
         let last_char = s.chars().last().unwrap();
 
         let suit = Suit::try_from(last_char);
-        let rank = s.chars().take(s.chars().count()-1).collect::<String>();
+        let rank = s.chars().take(s.chars().count() - 1).collect::<String>();
         let rank = Rank::from_str(&rank[..]);
 
         match (rank, suit) {
             (Ok(rank), Ok(suit)) => Ok(Card { rank, suit }),
             (Ok(_), Err(msg)) => Err(CardParsingError::SubError { msg }),
             (Err(msg), Ok(_)) => Err(CardParsingError::SubError { msg }),
-            (Err(msg1), Err(msg2)) => Err(CardParsingError::SubError { msg: format!("{msg1}\n{msg2}") }),
+            (Err(msg1), Err(msg2)) => Err(CardParsingError::SubError {
+                msg: format!("{msg1}\n{msg2}"),
+            }),
         }
     }
 }
@@ -79,9 +79,9 @@ mod card_tests {
             match subject {
                 Ok(_) => panic!("Oops, none of these should parse!"),
                 Err(err) => match err {
-                    CardParsingError::SubError { msg} => assert!(msg.ends_with("not a suit!")),
+                    CardParsingError::SubError { msg } => assert!(msg.ends_with("not a suit!")),
                     _ => panic!("Wrong kind of parsing error!"),
-                }
+                },
             }
         }
     }
