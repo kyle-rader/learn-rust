@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Score {
     HighCard,
     Pair,
@@ -15,17 +15,4 @@ pub enum Score {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn score_can_sort() {
-        let mut subject = vec![
-            Score::Pair,
-            Score::Flush,
-            Score::RoyalFlush,
-            Score::Straight,
-        ];
-
-        subject.sort();
-        assert_eq!(subject.iter().nth(3).unwrap(), &Score::RoyalFlush);
-    }
 }
