@@ -13,8 +13,8 @@ pub enum HandParsingError {
 }
 #[derive(Debug, PartialEq)]
 pub struct Hand<'a> {
-    hand: &'a str,
-    cards: Vec<Card>,
+    pub hand: &'a str,
+    pub cards: Vec<Card>,
 }
 
 impl<'a> TryFrom<&'a str> for Hand<'a> {
@@ -74,7 +74,7 @@ mod tests {
     }
 
     #[test]
-    fn bad_cards_in_hand() {
+    fn bad_suit_in_hand() {
         let original = "ZZ 5S AH KC 3S";
         let expected = HandParsingError::CardError(CardParsingError::InvalidSuit(
             SuitParsingError::InvalidSuit { suit: 'Z' },
@@ -82,5 +82,18 @@ mod tests {
 
         assert_eq!(Hand::try_from(original).unwrap_err(), expected);
         assert_eq!(format!("{expected}"), "'Z' is not a suit.");
+    }
+
+    #[test]
+    fn bad_rank_in_hand() {
+        let original = "4H 5S AH ZD 3S";
+        let expected = HandParsingError::CardError(CardParsingError::InvalidRank(
+            RankParsingError::InvalidRank {
+                rank: String::from("Z"),
+            },
+        ));
+
+        assert_eq!(Hand::try_from(original).unwrap_err(), expected);
+        assert_eq!(format!("{expected}"), "'Z' is not a rank.");
     }
 }
