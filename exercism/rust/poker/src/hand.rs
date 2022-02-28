@@ -70,4 +70,18 @@ mod tests {
 
         assert_eq!(hand, expected);
     }
+
+    #[test]
+    fn bad_cards_in_hand() {
+        let original = "ZZ 5S AH KC 3S";
+        let expected = HandParsingError::CardError(CardParsingError::SubError {
+            msg: String::from("not a Rank!\n'Z' is not a suit!"),
+        });
+
+        assert_eq!(Hand::try_from(original).unwrap_err(), expected);
+        assert_eq!(
+            format!("{expected}"),
+            "Sub error: not a Rank!\n'Z' is not a suit!"
+        );
+    }
 }

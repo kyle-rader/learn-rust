@@ -16,7 +16,7 @@ pub enum CardParsingError {
     TooShort,
     #[error("Error: Input string is too long!")]
     TooLong,
-    #[error("Sub error: {msg:?}")]
+    #[error("Sub error: {msg}")]
     SubError { msg: String },
 }
 
