@@ -1,9 +1,6 @@
-use std::error::Error;
 use std::str::FromStr;
 
 use crate::card::{Card, CardParsingError};
-use crate::rank::Rank;
-use crate::suit::Suit;
 
 use thiserror::Error;
 
@@ -35,6 +32,8 @@ impl<'a> TryFrom<&'a str> for Hand<'a> {
 
 #[cfg(test)]
 mod tests {
+    use crate::{rank::Rank, suit::Suit};
+
     use super::*;
 
     #[test]
