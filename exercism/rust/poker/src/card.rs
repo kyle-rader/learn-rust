@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use thiserror::Error;
 
 use crate::rank::{Rank, RankParsingError};
@@ -16,7 +15,7 @@ pub enum CardParsingError {
     InvalidSuit(#[from] SuitParsingError),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Card {
     pub rank: Rank,
     pub suit: Suit,
@@ -40,6 +39,18 @@ impl TryFrom<&str> for Card {
         let rank = Rank::try_from(&rank[..])?;
 
         Ok(Card { rank, suit })
+    }
+}
+
+impl PartialOrd for Card {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.rank.partial_cmp(&other.rank)
+    }
+}
+
+impl Ord for Card {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.rank.cmp(&other.rank)
     }
 }
 
@@ -84,5 +95,49 @@ mod card_tests {
     fn from_str_parses_a_card(subject: &str, rank: Rank, suit: Suit) {
         let expected = Ok(Card { rank, suit });
         assert_eq!(Card::try_from(subject), expected);
+    }
+
+    #[test]
+    fn card_can_sort() {
+        let expected = vec![
+            Card {
+                rank: Rank::Ace,
+                suit: Suit::Clubs,
+            },
+            Card {
+                rank: Rank::Four,
+                suit: Suit::Spades,
+            },
+            Card {
+                rank: Rank::Nine,
+                suit: Suit::Clubs,
+            },
+            Card {
+                rank: Rank::King,
+                suit: Suit::Hearts,
+            },
+        ];
+
+        let mut subject = vec![
+            Card {
+                rank: Rank::Four,
+                suit: Suit::Spades,
+            },
+            Card {
+                rank: Rank::King,
+                suit: Suit::Hearts,
+            },
+            Card {
+                rank: Rank::Nine,
+                suit: Suit::Clubs,
+            },
+            Card {
+                rank: Rank::Ace,
+                suit: Suit::Clubs,
+            },
+        ];
+
+        subject.sort();
+        assert_eq!(subject, expected);
     }
 }
