@@ -6,7 +6,7 @@ pub enum SuitParsingError {
     InvalidSuit { suit: char },
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub enum Suit {
     Hearts,
     Diamonds,

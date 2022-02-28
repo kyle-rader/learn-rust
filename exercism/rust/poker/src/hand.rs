@@ -1,5 +1,11 @@
-use crate::card::{Card, CardParsingError};
+use std::collections::HashMap;
 
+use crate::{
+    card::{Card, CardParsingError},
+    rank::Rank,
+};
+
+use counter::Counter;
 use thiserror::Error;
 
 #[derive(Debug, PartialEq, Error)]
@@ -14,7 +20,7 @@ pub enum HandParsingError {
 pub struct Hand<'a> {
     pub hand: &'a str,
     pub cards: Vec<Card>,
-    // pub score: Score,
+    pub score: Score,
 }
 
 const HAND_SIZE: usize = 5;
@@ -32,12 +38,12 @@ impl<'a> TryFrom<&'a str> for Hand<'a> {
             return Err(HandParsingError::InvalidSize { n: cards.len() });
         }
 
-        cards.sort();
+        let ranks: Counter<Rank> = cards.iter().map(|c| c.rank).collect();
 
         Ok(Hand {
             hand: s,
             cards,
-            // score,
+            score,
         })
     }
 }
@@ -46,6 +52,7 @@ impl<'a> TryFrom<&'a str> for Hand<'a> {
 mod tests {
     use crate::{
         rank::{Rank, RankParsingError},
+        score::Score,
         suit::{Suit, SuitParsingError},
     };
 
@@ -120,5 +127,11 @@ mod tests {
             format!("{expected}"),
             format!("{n} is not the right number of cards. (A hand has 5 cards)")
         );
+    }
+
+    #[test]
+    fn hand_score_royal_flush() {
+        let subject = Hand::try_from("10H JH QH KH AH").unwrap();
+        assert_eq!(subject.score, Score::RoyalFlush);
     }
 }
