@@ -44,23 +44,23 @@ mod tests {
             cards: vec![
                 Card {
                     rank: Rank::Four,
-                    suit: Suit::Spade,
+                    suit: Suit::Spades,
                 },
                 Card {
                     rank: Rank::Five,
-                    suit: Suit::Spade,
+                    suit: Suit::Spades,
                 },
                 Card {
                     rank: Rank::Seven,
-                    suit: Suit::Heart,
+                    suit: Suit::Hearts,
                 },
                 Card {
                     rank: Rank::Eight,
-                    suit: Suit::Diamond,
+                    suit: Suit::Diamonds,
                 },
                 Card {
                     rank: Rank::Jack,
-                    suit: Suit::Club,
+                    suit: Suit::Clubs,
                 },
             ],
         });

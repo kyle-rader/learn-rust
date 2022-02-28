@@ -86,11 +86,11 @@ mod card_tests {
         }
     }
 
-    #[test_case("AH", Rank::Ace, Suit::Heart ; "Ace of Hearts")]
-    #[test_case("2H", Rank::Two, Suit::Heart ; "Two of Spades")]
-    #[test_case("3S", Rank::Three, Suit::Spade ; "Three of Spades")]
-    #[test_case("10C", Rank::Ten, Suit::Club ; "Ten of Clubs")]
-    #[test_case("JD", Rank::Jack, Suit::Diamond ; "Jack of Diamonds")]
+    #[test_case("AH", Rank::Ace, Suit::Hearts ; "Ace of Hearts")]
+    #[test_case("2H", Rank::Two, Suit::Hearts ; "Two of Spades")]
+    #[test_case("3S", Rank::Three, Suit::Spades ; "Three of Spades")]
+    #[test_case("10C", Rank::Ten, Suit::Clubs ; "Ten of Clubs")]
+    #[test_case("JD", Rank::Jack, Suit::Diamonds ; "Jack of Diamonds")]
     fn from_str_parses_a_card(subject: &str, rank: Rank, suit: Suit) {
         let expected = Ok(Card { rank, suit });
         assert_eq!(subject.parse(), expected);
