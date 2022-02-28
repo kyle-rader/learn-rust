@@ -17,6 +17,8 @@ pub struct Hand<'a> {
     // pub score: Score,
 }
 
+const HAND_SIZE: usize = 5;
+
 impl<'a> TryFrom<&'a str> for Hand<'a> {
     type Error = HandParsingError;
 
@@ -26,7 +28,7 @@ impl<'a> TryFrom<&'a str> for Hand<'a> {
             .map(Card::try_from)
             .collect::<Result<Vec<Card>, CardParsingError>>()?;
 
-        if cards.len() != 5 {
+        if cards.len() != HAND_SIZE {
             return Err(HandParsingError::InvalidSize { n: cards.len() });
         }
 
