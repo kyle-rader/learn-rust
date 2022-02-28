@@ -1,3 +1,11 @@
+use thiserror::Error;
+
+#[derive(Debug, PartialEq, Error)]
+pub enum SuitParsingError {
+    #[error("'{suit}' is not a suit.")]
+    InvalidSuit { suit: char },
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Suit {
     Hearts,
@@ -7,14 +15,14 @@ pub enum Suit {
 }
 
 impl TryFrom<char> for Suit {
-    type Error = String;
+    type Error = SuitParsingError;
     fn try_from(c: char) -> Result<Self, Self::Error> {
         match c {
             'H' | 'h' => Ok(Suit::Hearts),
             'D' | 'd' => Ok(Suit::Diamonds),
             'C' | 'c' => Ok(Suit::Clubs),
             'S' | 's' => Ok(Suit::Spades),
-            _ => Err(format!("'{c}' is not a suit!")),
+            _ => Err(SuitParsingError::InvalidSuit { suit: c }),
         }
     }
 }
@@ -38,7 +46,7 @@ mod suit_tests {
     #[test]
     fn suit_try_from_err() {
         let subject = Suit::try_from('A');
-        let expected = Err(String::from("'A' is not a suit!"));
+        let expected = Err(SuitParsingError::InvalidSuit { suit: 'A' });
         assert_eq!(subject, expected);
     }
 }

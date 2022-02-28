@@ -23,7 +23,7 @@ impl<'a> TryFrom<&'a str> for Hand<'a> {
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
         let cards = s
             .split_ascii_whitespace()
-            .map(Card::from_str)
+            .map(Card::try_from)
             .collect::<Result<Vec<Card>, CardParsingError>>()?;
 
         Ok(Hand { hand: s, cards })
@@ -32,7 +32,10 @@ impl<'a> TryFrom<&'a str> for Hand<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{rank::Rank, suit::Suit};
+    use crate::{
+        rank::{Rank, RankParsingError},
+        suit::{Suit, SuitParsingError},
+    };
 
     use super::*;
 
@@ -73,14 +76,11 @@ mod tests {
     #[test]
     fn bad_cards_in_hand() {
         let original = "ZZ 5S AH KC 3S";
-        let expected = HandParsingError::CardError(CardParsingError::SubError {
-            msg: String::from("not a Rank!\n'Z' is not a suit!"),
-        });
+        let expected = HandParsingError::CardError(CardParsingError::InvalidSuit(
+            SuitParsingError::InvalidSuit { suit: 'Z' },
+        ));
 
         assert_eq!(Hand::try_from(original).unwrap_err(), expected);
-        assert_eq!(
-            format!("{expected}"),
-            "Sub error: not a Rank!\n'Z' is not a suit!"
-        );
+        assert_eq!(format!("{expected}"), "'Z' is not a suit.");
     }
 }

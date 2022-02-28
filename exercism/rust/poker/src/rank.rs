@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use thiserror::Error;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Rank {
@@ -17,12 +17,16 @@ pub enum Rank {
     King,
 }
 
-static ERR_NOT_A_RANK: &str = "not a Rank!";
+#[derive(Debug, PartialEq, Error)]
+pub enum RankParsingError {
+    #[error("'{rank}' is not a rank.")]
+    InvalidRank { rank: String },
+}
 
-impl FromStr for Rank {
-    type Err = String;
+impl TryFrom<&str> for Rank {
+    type Error = RankParsingError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
             "A" => Ok(Rank::Ace),
             "2" => Ok(Rank::Two),
@@ -37,7 +41,9 @@ impl FromStr for Rank {
             "J" => Ok(Rank::Jack),
             "Q" => Ok(Rank::Queen),
             "K" => Ok(Rank::King),
-            _ => Err(String::from(ERR_NOT_A_RANK)),
+            _ => Err(RankParsingError::InvalidRank {
+                rank: String::from(s),
+            }),
         }
     }
 }
@@ -60,13 +66,18 @@ mod test {
     #[test_case("J", Rank::Jack ; "Jack")]
     #[test_case("Q", Rank::Queen ; "Queen")]
     #[test_case("K", Rank::King ; "King")]
-    fn from_str_ace(s: &str, r: Rank) {
-        assert_eq!(s.parse::<Rank>(), Ok(r));
+    fn try_from_valid_rank(s: &str, r: Rank) {
+        assert_eq!(Rank::try_from(s), Ok(r));
     }
 
     #[test]
     fn from_str_not_a_rank() {
-        assert_eq!("42".parse::<Rank>(), Err(String::from(ERR_NOT_A_RANK)));
+        assert_eq!(
+            Rank::try_from("42"),
+            Err(RankParsingError::InvalidRank {
+                rank: String::from("42"),
+            })
+        );
     }
 
     #[test]

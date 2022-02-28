@@ -1,14 +1,8 @@
 use std::str::FromStr;
 use thiserror::Error;
 
-use crate::rank::Rank;
-use crate::suit::Suit;
-
-#[derive(Debug, PartialEq)]
-pub struct Card {
-    pub rank: Rank,
-    pub suit: Suit,
-}
+use crate::rank::{Rank, RankParsingError};
+use crate::suit::{Suit, SuitParsingError};
 
 #[derive(Debug, PartialEq, Error)]
 pub enum CardParsingError {
@@ -16,14 +10,22 @@ pub enum CardParsingError {
     TooShort,
     #[error("Error: Input string is too long!")]
     TooLong,
-    #[error("Sub error: {msg}")]
-    SubError { msg: String },
+    #[error(transparent)]
+    InvalidRank(#[from] RankParsingError),
+    #[error(transparent)]
+    InvalidSuit(#[from] SuitParsingError),
 }
 
-impl FromStr for Card {
-    type Err = CardParsingError;
+#[derive(Debug, PartialEq)]
+pub struct Card {
+    pub rank: Rank,
+    pub suit: Suit,
+}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+impl TryFrom<&str> for Card {
+    type Error = CardParsingError;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
         if (0..=1).contains(&s.len()) {
             return Err(CardParsingError::TooShort);
         } else if s.len() > 3 {
@@ -32,19 +34,12 @@ impl FromStr for Card {
 
         // unwrap the last char because we have asserted above there *is* a last char.
         let last_char = s.chars().last().unwrap();
+        let suit = Suit::try_from(last_char)?;
 
-        let suit = Suit::try_from(last_char);
         let rank = s.chars().take(s.chars().count() - 1).collect::<String>();
-        let rank = Rank::from_str(&rank[..]);
+        let rank = Rank::try_from(&rank[..])?;
 
-        match (rank, suit) {
-            (Ok(rank), Ok(suit)) => Ok(Card { rank, suit }),
-            (Ok(_), Err(msg)) => Err(CardParsingError::SubError { msg }),
-            (Err(msg), Ok(_)) => Err(CardParsingError::SubError { msg }),
-            (Err(msg1), Err(msg2)) => Err(CardParsingError::SubError {
-                msg: format!("{msg1}\n{msg2}"),
-            }),
-        }
+        Ok(Card { rank, suit })
     }
 }
 
@@ -55,34 +50,29 @@ mod card_tests {
 
     #[test]
     fn from_str_no_chars() {
-        let subject = "".parse::<Card>().unwrap_err();
+        let subject = Card::try_from("").unwrap_err();
         let expected = CardParsingError::TooShort;
         assert_eq!(subject, expected);
     }
 
     #[test]
     fn from_str_too_many_chars() {
-        let subject = Card::from_str("4TOOLONG").unwrap_err();
+        let subject = Card::try_from("4TOOLONG").unwrap_err();
         let expected = CardParsingError::TooLong;
         assert_eq!(subject, expected);
     }
 
-    #[test]
-    fn from_str_bad_suit() {
-        let subjects = vec![
-            Card::from_str("3K"),
-            Card::from_str("10Z"),
-            Card::from_str("5Ā"),
-        ];
+    #[test_case("3K" ; "King is not a suit")]
+    #[test_case("10Z" ; "Z is not a suit")]
+    #[test_case("5Ā" ; "Other unicode chars are not a suit")]
+    fn from_str_bad_suit(subject: &str) {
+        let subject = Card::try_from(subject);
 
-        for subject in subjects.iter() {
-            match subject {
-                Ok(_) => panic!("Oops, none of these should parse!"),
-                Err(err) => match err {
-                    CardParsingError::SubError { msg } => assert!(msg.ends_with("not a suit!")),
-                    _ => panic!("Wrong kind of parsing error!"),
-                },
+        match subject {
+            Err(err) => {
+                assert!(err.to_string().contains("is not a suit."));
             }
+            _ => panic!("should be suit parsing error!"),
         }
     }
 
@@ -93,6 +83,6 @@ mod card_tests {
     #[test_case("JD", Rank::Jack, Suit::Diamonds ; "Jack of Diamonds")]
     fn from_str_parses_a_card(subject: &str, rank: Rank, suit: Suit) {
         let expected = Ok(Card { rank, suit });
-        assert_eq!(subject.parse(), expected);
+        assert_eq!(Card::try_from(subject), expected);
     }
 }
