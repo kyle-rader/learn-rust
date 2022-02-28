@@ -22,7 +22,7 @@ mod tests {
             Score::Pair,
             Score::Flush,
             Score::RoyalFlush,
-            Score::Straight
+            Score::Straight,
         ];
 
         subject.sort();

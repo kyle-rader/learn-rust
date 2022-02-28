@@ -11,33 +11,25 @@ use thiserror::Error;
 pub enum HandParsingError {
     #[error("{msg:?}")]
     Error { msg: String },
+    #[error(transparent)]
+    CardError(#[from] CardParsingError),
 }
-
 #[derive(Debug, PartialEq)]
 pub struct Hand<'a> {
     hand: &'a str,
     cards: Vec<Card>,
 }
 
-impl<'a> FromStr for Hand<'a> {
-    type Err = HandParsingError;
+impl<'a> TryFrom<&'a str> for Hand<'a> {
+    type Error = HandParsingError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Err(HandParsingError::Error {
-            msg: String::from("todo!"),
-        })
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        let cards = s
+            .split_ascii_whitespace()
+            .map(Card::from_str)
+            .collect::<Result<Vec<Card>, CardParsingError>>()?;
 
-        // let cards = s
-        //     .split_ascii_whitespace()
-        //     .map(Card::from_str)
-        //     .collect::<Result<Vec<Card>, CardParsingError>>();
-
-        // match cards {
-        //     Ok(c) => Ok(Hand { hand: s, cards: c }),
-        //     Err(msg) => Err(HandParsingError::Error {
-        //         msg: msg.to_string(),
-        //     }),
-        // }
+        Ok(Hand { hand: s, cards })
     }
 }
 
@@ -74,7 +66,7 @@ mod tests {
             ],
         });
 
-        let hand = original.parse::<Hand>();
+        let hand = Hand::try_from(original);
 
         assert_eq!(hand, expected);
     }
