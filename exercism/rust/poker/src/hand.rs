@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use crate::{
     card::{Card, CardParsingError},
     rank::Rank,
+    score::Score,
+    suit::Suit,
 };
 
 use counter::Counter;
@@ -38,13 +40,28 @@ impl<'a> TryFrom<&'a str> for Hand<'a> {
             return Err(HandParsingError::InvalidSize { n: cards.len() });
         }
 
-        let ranks: Counter<Rank> = cards.iter().map(|c| c.rank).collect();
+        cards.sort(); // sort so we can easily get the high card
+        let cards = cards; // no longer mut
+
+        let score = calculate_score(&cards);
 
         Ok(Hand {
             hand: s,
             cards,
             score,
         })
+    }
+}
+
+fn calculate_score(cards: &Vec<Card>) -> Score {
+    let ranks: Counter<Rank> = cards.iter().map(|c| c.rank).collect();
+    let suits: Counter<Suit> = cards.iter().map(|c| c.suit).collect();
+
+    let royal_flush = [Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace];
+    if suits.len() == 1 && royal_flush.into_iter().all(|r| ranks.contains_key(&r)) {
+        Score::RoyalFlush
+    } else {
+        Score::HighCard
     }
 }
 
@@ -64,6 +81,7 @@ mod tests {
         let original = "4S 5S 7H 8D JC";
         let expected = Ok(Hand {
             hand: &original,
+            score: Score::HighCard,
             cards: vec![
                 Card {
                     rank: Rank::Four,
