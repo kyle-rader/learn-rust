@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::{
     card::{Card, CardParsingError},
@@ -61,6 +61,12 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
         *suit_count += 1;
     }
 
+    let mut count_to_ranks: HashMap<usize, HashSet<Rank>> = HashMap::new();
+    for (rank, count) in ranks.iter() {
+        let count_rank = count_to_ranks.entry(*count).or_default();
+        count_rank.insert(*rank);
+    }
+
     let high_rank = cards.iter().last().unwrap().rank;
 
     // Royal Flush
@@ -111,13 +117,11 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     }
 
     // Two Pair
-    let pairs_count = ranks.values().fold(0, |acc, rank_count| {
-        acc + if *rank_count == 2 { 1 } else { 0 }
-    });
+    let pairs = count_to_ranks.entry(2).or_default();
 
-    match pairs_count {
+    match pairs.len() {
         2 => Score::TwoPair,
-        1 => Score::Pair,
+        1 => Score::Pair(*pairs.iter().nth(0).unwrap()),
         _ => Score::HighCard(high_rank),
     }
 }
@@ -273,7 +277,7 @@ mod tests {
     #[test]
     fn hand_score_pair() {
         let subject = Hand::try_from("6S 3H JD JS 2C").unwrap();
-        assert_eq!(subject.score, Score::Pair);
+        assert_eq!(subject.score, Score::Pair(Rank::Jack));
     }
 
     #[test]
