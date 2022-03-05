@@ -29,8 +29,8 @@ const HAND_SIZE: usize = 5;
 impl<'a> TryFrom<&'a str> for Hand<'a> {
     type Error = HandParsingError;
 
-    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
-        let mut cards = s
+    fn try_from(hand: &'a str) -> Result<Self, Self::Error> {
+        let mut cards = hand
             .split_ascii_whitespace()
             .map(Card::try_from)
             .collect::<Result<Vec<Card>, CardParsingError>>()?;
@@ -44,22 +44,18 @@ impl<'a> TryFrom<&'a str> for Hand<'a> {
 
         let score = calculate_score(&cards);
 
-        Ok(Hand {
-            hand: s,
-            cards,
-            score,
-        })
+        Ok(Hand { hand, cards, score })
     }
 }
+
+const ROYAL_FLUSH: &[Rank; 5] = &[Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace];
 
 fn calculate_score(cards: &Vec<Card>) -> Score {
     let ranks: Counter<Rank> = cards.iter().map(|c| c.rank).collect();
     let suits: Counter<Suit> = cards.iter().map(|c| c.suit).collect();
 
     // Royal Flush
-    let royal_flush = [Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace];
-
-    if suits.len() == 1 && royal_flush.into_iter().all(|r| ranks.contains_key(&r)) {
+    if suits.len() == 1 && ROYAL_FLUSH.into_iter().all(|r| ranks.contains_key(&r)) {
         return Score::RoyalFlush;
     }
 
@@ -68,10 +64,15 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     for r in Rank::into_enum_iter() {
         all_ranks.push(r);
     }
-    for flush in all_ranks.windows(5) {
-        if flush.iter().all(|r| ranks.contains_key(r)) {
-            return Score::StraightFlush;
-        }
+
+    let is_straight = all_ranks
+        .windows(HAND_SIZE)
+        .any(|flush| flush.iter().all(|r| ranks.contains_key(r)));
+
+    let is_flush = suits.len() == 1;
+
+    if is_straight && is_flush {
+        return Score::StraightFlush;
     }
 
     // Four of a Kind
@@ -80,15 +81,42 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     }
 
     // Full House
-    if ranks.values().any(|v| *v == 3) && ranks.values().any(|v| *v == 2) {
+    let is_three_of_kind = ranks.values().any(|v| *v == 3);
+    if is_three_of_kind && ranks.values().any(|v| *v == 2) {
         return Score::FullHouse;
     }
 
-    Score::HighCard
+    // Flush
+    if is_flush {
+        return Score::Flush;
+    }
+
+    // Straight
+    if is_straight {
+        return Score::Straight;
+    }
+
+    // Three of a Kind
+    if is_three_of_kind {
+        return Score::ThreeOfAKind;
+    }
+
+    // Two Pair
+    let pairs_count = ranks.values().fold(0, |acc, rank_count| {
+        acc + if *rank_count == 2 { 1 } else { 0 }
+    });
+
+    match pairs_count {
+        2 => Score::TwoPair,
+        1 => Score::Pair,
+        _ => Score::HighCard,
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::ops::Sub;
+
     use crate::{
         rank::{Rank, RankParsingError},
         score::Score,
@@ -176,7 +204,7 @@ mod tests {
     }
 
     #[test]
-    fn hand_score_flush() {
+    fn hand_score_straight_flush() {
         let subject = Hand::try_from("4S 5S 6S 7S 8S").unwrap();
         assert_eq!(subject.score, Score::StraightFlush);
     }
@@ -191,5 +219,41 @@ mod tests {
     fn hand_score_full_house() {
         let subject = Hand::try_from("4S 4C KH KD KS").unwrap();
         assert_eq!(subject.score, Score::FullHouse);
+    }
+
+    #[test]
+    fn hand_score_flush() {
+        let subject = Hand::try_from("4S 5S 2S 9S KS").unwrap();
+        assert_eq!(subject.score, Score::Flush);
+    }
+
+    #[test]
+    fn hand_score_straight() {
+        let subject = Hand::try_from("4S 5C 6S 7D 8H").unwrap();
+        assert_eq!(subject.score, Score::Straight);
+    }
+
+    #[test]
+    fn hand_score_three_of_a_kind() {
+        let subject = Hand::try_from("6S 6H 6D JS 2C").unwrap();
+        assert_eq!(subject.score, Score::ThreeOfAKind);
+    }
+
+    #[test]
+    fn hand_score_two_pair() {
+        let subject = Hand::try_from("6S 6H JD JS 2C").unwrap();
+        assert_eq!(subject.score, Score::TwoPair);
+    }
+
+    #[test]
+    fn hand_score_pair() {
+        let subject = Hand::try_from("6S 3H JD JS 2C").unwrap();
+        assert_eq!(subject.score, Score::Pair);
+    }
+
+    #[test]
+    fn hand_score_high_card() {
+        let subject = Hand::try_from("6S 3H 10D JS 2C").unwrap();
+        assert_eq!(subject.score, Score::HighCard);
     }
 }
