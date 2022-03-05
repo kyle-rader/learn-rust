@@ -11,8 +11,3 @@ pub enum Score {
     StraightFlush,
     RoyalFlush,
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-}

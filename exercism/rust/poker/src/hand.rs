@@ -115,8 +115,6 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
 
 #[cfg(test)]
 mod tests {
-    use std::ops::Sub;
-
     use crate::{
         rank::{Rank, RankParsingError},
         score::Score,
@@ -197,33 +195,50 @@ mod tests {
         );
     }
 
-    #[test]
-    fn hand_score_royal_flush() {
-        let subject = Hand::try_from("10H JH QH KH AH").unwrap();
+    #[test_case("10H JH QH KH AH" ; "Hearts")]
+    #[test_case("10S JS QS KS AS" ; "Spades")]
+    #[test_case("10C JC QC KC AC" ; "Clubs")]
+    #[test_case("10D JD QD KD AD" ; "Diamonds")]
+    fn hand_score_royal_flush(input: &str) {
+        let subject = Hand::try_from(input).unwrap();
         assert_eq!(subject.score, Score::RoyalFlush);
     }
 
-    #[test]
-    fn hand_score_straight_flush() {
-        let subject = Hand::try_from("4S 5S 6S 7S 8S").unwrap();
+    #[test_case("AS 2S 3S 4S 5S")]
+    #[test_case("2S 3S 4S 5S 6S")]
+    #[test_case("3S 4S 5S 6S 7S")]
+    #[test_case("4S 5S 6S 7S 8S")]
+    #[test_case("5S 6S 7S 8S 9S")]
+    #[test_case("6S 7S 8S 9S 10S")]
+    #[test_case("7S 8S 9S 10S JS")]
+    #[test_case("8S 9S 10S JS QS")]
+    #[test_case("9S 10S JS QS KS")]
+    fn hand_score_straight_flush(input: &str) {
+        let subject = Hand::try_from(input).unwrap();
         assert_eq!(subject.score, Score::StraightFlush);
     }
 
-    #[test]
-    fn hand_score_four_of_a_kind() {
-        let subject = Hand::try_from("4S 4C 4H 4D KS").unwrap();
+    #[test_case("4S 4C 4H 4D KS")]
+    #[test_case("AS AC AH AD 3S")]
+    fn hand_score_four_of_a_kind(input: &str) {
+        let subject = Hand::try_from(input).unwrap();
         assert_eq!(subject.score, Score::FourOfAKind);
     }
 
-    #[test]
-    fn hand_score_full_house() {
-        let subject = Hand::try_from("4S 4C KH KD KS").unwrap();
+    #[test_case("4S 4C KH KD KS" ; "In order")]
+    #[test_case("4C KH 4S KD KS" ; "Out of order")]
+    #[test_case("AC KH AS KD AS" ; "With Aces")]
+    fn hand_score_full_house(input: &str) {
+        let subject = Hand::try_from(input).unwrap();
         assert_eq!(subject.score, Score::FullHouse);
     }
 
-    #[test]
-    fn hand_score_flush() {
-        let subject = Hand::try_from("4S 5S 2S 9S KS").unwrap();
+    #[test_case("4S 5S 2S 9S KS" ; "Spades")]
+    #[test_case("4C 5C 2C 9C KC" ; "Clubs")]
+    #[test_case("4D 5D 2D 9D KD" ; "Diamonds")]
+    #[test_case("4H 5H 2H 9H KH" ; "Hearts")]
+    fn hand_score_flush(input: &str) {
+        let subject = Hand::try_from(input).unwrap();
         assert_eq!(subject.score, Score::Flush);
     }
 
@@ -239,9 +254,10 @@ mod tests {
         assert_eq!(subject.score, Score::ThreeOfAKind);
     }
 
-    #[test]
-    fn hand_score_two_pair() {
-        let subject = Hand::try_from("6S 6H JD JS 2C").unwrap();
+    #[test_case("6S 6H JD JS 2C" ; "In order")]
+    #[test_case("6S JD JS 2C 6H" ; "Out of order")]
+    fn hand_score_two_pair(input: &str) {
+        let subject = Hand::try_from(input).unwrap();
         assert_eq!(subject.score, Score::TwoPair);
     }
 
