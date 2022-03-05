@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     card::{Card, CardParsingError},
     rank::Rank,
@@ -5,7 +7,6 @@ use crate::{
     suit::Suit,
 };
 
-use counter::Counter;
 use enum_iterator::IntoEnumIterator;
 use thiserror::Error;
 
@@ -25,6 +26,7 @@ pub struct Hand<'a> {
 }
 
 const HAND_SIZE: usize = 5;
+const ROYAL_FLUSH: &[Rank; 5] = &[Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace];
 
 impl<'a> TryFrom<&'a str> for Hand<'a> {
     type Error = HandParsingError;
@@ -48,11 +50,17 @@ impl<'a> TryFrom<&'a str> for Hand<'a> {
     }
 }
 
-const ROYAL_FLUSH: &[Rank; 5] = &[Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace];
-
 fn calculate_score(cards: &Vec<Card>) -> Score {
-    let ranks: Counter<Rank> = cards.iter().map(|c| c.rank).collect();
-    let suits: Counter<Suit> = cards.iter().map(|c| c.suit).collect();
+    let mut ranks: HashMap<Rank, usize> = HashMap::new();
+    let mut suits: HashMap<Suit, usize> = HashMap::new();
+
+    for card in cards.iter() {
+        let rank_count = ranks.entry(card.rank).or_insert(0);
+        *rank_count += 1;
+        let suit_count = suits.entry(card.suit).or_insert(0);
+        *suit_count += 1;
+    }
+
     let high_rank = cards.iter().last().unwrap().rank;
 
     // Royal Flush
