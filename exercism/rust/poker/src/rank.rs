@@ -1,6 +1,7 @@
+use enum_iterator::IntoEnumIterator;
 use thiserror::Error;
 
-#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Copy, Clone, IntoEnumIterator)]
 pub enum Rank {
     Ace,
     Two,

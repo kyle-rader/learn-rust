@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     card::{Card, CardParsingError},
     rank::Rank,
@@ -8,6 +6,7 @@ use crate::{
 };
 
 use counter::Counter;
+use enum_iterator::IntoEnumIterator;
 use thiserror::Error;
 
 #[derive(Debug, PartialEq, Error)]
@@ -57,12 +56,25 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     let ranks: Counter<Rank> = cards.iter().map(|c| c.rank).collect();
     let suits: Counter<Suit> = cards.iter().map(|c| c.suit).collect();
 
+    // Royal Flush
     let royal_flush = [Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace];
+
     if suits.len() == 1 && royal_flush.into_iter().all(|r| ranks.contains_key(&r)) {
-        Score::RoyalFlush
-    } else {
-        Score::HighCard
+        return Score::RoyalFlush;
     }
+
+    // Straight Flush
+    let mut all_ranks = Vec::new();
+    for r in Rank::into_enum_iter() {
+        all_ranks.push(r);
+    }
+    for flush in all_ranks.windows(5) {
+        if flush.iter().all(|r| ranks.contains_key(r)) {
+            return Score::Flush;
+        }
+    }
+
+    Score::HighCard
 }
 
 #[cfg(test)]
@@ -151,5 +163,11 @@ mod tests {
     fn hand_score_royal_flush() {
         let subject = Hand::try_from("10H JH QH KH AH").unwrap();
         assert_eq!(subject.score, Score::RoyalFlush);
+    }
+
+    #[test]
+    fn hand_score_flush() {
+        let subject = Hand::try_from("4S 5S 6S 7S 8S").unwrap();
+        assert_eq!(subject.score, Score::Flush);
     }
 }
