@@ -70,7 +70,7 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     }
     for flush in all_ranks.windows(5) {
         if flush.iter().all(|r| ranks.contains_key(r)) {
-            return Score::Flush;
+            return Score::StraightFlush;
         }
     }
 
@@ -178,7 +178,7 @@ mod tests {
     #[test]
     fn hand_score_flush() {
         let subject = Hand::try_from("4S 5S 6S 7S 8S").unwrap();
-        assert_eq!(subject.score, Score::Flush);
+        assert_eq!(subject.score, Score::StraightFlush);
     }
 
     #[test]
