@@ -53,6 +53,7 @@ const ROYAL_FLUSH: &[Rank; 5] = &[Rank::Ten, Rank::Jack, Rank::Queen, Rank::King
 fn calculate_score(cards: &Vec<Card>) -> Score {
     let ranks: Counter<Rank> = cards.iter().map(|c| c.rank).collect();
     let suits: Counter<Suit> = cards.iter().map(|c| c.suit).collect();
+    let high_rank = cards.iter().last().unwrap().rank;
 
     // Royal Flush
     if suits.len() == 1 && ROYAL_FLUSH.into_iter().all(|r| ranks.contains_key(&r)) {
@@ -109,7 +110,7 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     match pairs_count {
         2 => Score::TwoPair,
         1 => Score::Pair,
-        _ => Score::HighCard,
+        _ => Score::HighCard(high_rank),
     }
 }
 
@@ -129,7 +130,7 @@ mod tests {
         let original = "4S 5S 7H 8D JC";
         let expected = Ok(Hand {
             hand: &original,
-            score: Score::HighCard,
+            score: Score::HighCard(Rank::Jack),
             cards: vec![
                 Card {
                     rank: Rank::Four,
@@ -270,6 +271,6 @@ mod tests {
     #[test]
     fn hand_score_high_card() {
         let subject = Hand::try_from("6S 3H 10D JS 2C").unwrap();
-        assert_eq!(subject.score, Score::HighCard);
+        assert_eq!(subject.score, Score::HighCard(Rank::Jack));
     }
 }
