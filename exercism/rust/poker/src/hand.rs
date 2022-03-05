@@ -74,6 +74,16 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
         }
     }
 
+    // Four of a Kind
+    if ranks.values().any(|v| *v == 4) {
+        return Score::FourOfAKind;
+    }
+
+    // Full House
+    if ranks.values().any(|v| *v == 3) && ranks.values().any(|v| *v == 2) {
+        return Score::FullHouse;
+    }
+
     Score::HighCard
 }
 
@@ -169,5 +179,17 @@ mod tests {
     fn hand_score_flush() {
         let subject = Hand::try_from("4S 5S 6S 7S 8S").unwrap();
         assert_eq!(subject.score, Score::Flush);
+    }
+
+    #[test]
+    fn hand_score_four_of_a_kind() {
+        let subject = Hand::try_from("4S 4C 4H 4D KS").unwrap();
+        assert_eq!(subject.score, Score::FourOfAKind);
+    }
+
+    #[test]
+    fn hand_score_full_house() {
+        let subject = Hand::try_from("4S 4C KH KD KS").unwrap();
+        assert_eq!(subject.score, Score::FullHouse);
     }
 }
