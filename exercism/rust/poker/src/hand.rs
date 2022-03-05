@@ -120,7 +120,7 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     let pairs = count_to_ranks.entry(2).or_default();
 
     match pairs.len() {
-        2 => Score::TwoPair,
+        2 => Score::TwoPair(*pairs.iter().max().unwrap()),
         1 => Score::Pair(*pairs.iter().nth(0).unwrap()),
         _ => Score::HighCard(high_rank),
     }
@@ -267,11 +267,12 @@ mod tests {
         assert_eq!(subject.score, Score::ThreeOfAKind);
     }
 
-    #[test_case("6S 6H JD JS 2C" ; "In order")]
-    #[test_case("6S JD JS 2C 6H" ; "Out of order")]
-    fn hand_score_two_pair(input: &str) {
+    #[test_case("6S 6H JD JS 2C", Rank::Jack ; "In order")]
+    #[test_case("6S JD JS 2C 6H", Rank::Jack ; "Out of order")]
+    #[test_case("KS JD 2C JS KH", Rank::King ; "Higher than Jack")]
+    fn hand_score_two_pair(input: &str, high_rank: Rank) {
         let subject = Hand::try_from(input).unwrap();
-        assert_eq!(subject.score, Score::TwoPair);
+        assert_eq!(subject.score, Score::TwoPair(high_rank));
     }
 
     #[test]
