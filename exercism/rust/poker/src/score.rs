@@ -1,9 +1,11 @@
+use crate::rank::Rank;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Score {
-    HighCard,
-    Pair,
-    TwoPair,
-    ThreeOfAKind,
+    HighCard(Rank),
+    Pair(Rank),
+    TwoPair(Rank),
+    ThreeOfAKind(Rank),
     Straight,
     Flush,
     FullHouse,
