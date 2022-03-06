@@ -4,7 +4,7 @@ use crate::rank::Rank;
 pub enum Score {
     HighCard(Rank),
     Pair(Rank),
-    TwoPair(Rank),
+    TwoPair(Rank, Rank),
     ThreeOfAKind(Rank),
     Straight,
     Flush,
