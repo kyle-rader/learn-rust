@@ -5,7 +5,7 @@ pub enum Score {
     HighCard(Rank),
     Pair(Rank),
     TwoPair(Rank),
-    ThreeOfAKind,
+    ThreeOfAKind(Rank),
     Straight,
     Flush,
     FullHouse,

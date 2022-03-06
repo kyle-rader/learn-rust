@@ -67,6 +67,14 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
         count_rank.insert(*rank);
     }
 
+    // Ensure that each count does have a HashSet so that we do not have to borrow as mutable multiple times later.
+    for i in 0..=HAND_SIZE {
+        let _ = count_to_ranks.entry(i).or_default();
+    }
+
+    // Rebind as immutable
+    let count_to_ranks = count_to_ranks;
+
     let high_rank = cards.iter().last().unwrap().rank;
 
     // Royal Flush
@@ -91,13 +99,15 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     }
 
     // Four of a Kind
-    if ranks.values().any(|v| *v == 4) {
+    if count_to_ranks.get(&4).unwrap().len() == 1 {
         return Score::FourOfAKind;
     }
 
     // Full House
-    let is_three_of_kind = ranks.values().any(|v| *v == 3);
-    if is_three_of_kind && ranks.values().any(|v| *v == 2) {
+    let trios = count_to_ranks.get(&3).unwrap();
+    let pairs = count_to_ranks.get(&2).unwrap();
+
+    if trios.len() == 1 && pairs.len() == 1 {
         return Score::FullHouse;
     }
 
@@ -112,13 +122,11 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     }
 
     // Three of a Kind
-    if is_three_of_kind {
-        return Score::ThreeOfAKind;
+    if trios.len() == 1 {
+        return Score::ThreeOfAKind(*trios.iter().nth(0).unwrap());
     }
 
     // Two Pair
-    let pairs = count_to_ranks.entry(2).or_default();
-
     match pairs.len() {
         2 => Score::TwoPair(*pairs.iter().max().unwrap()),
         1 => Score::Pair(*pairs.iter().nth(0).unwrap()),
@@ -263,8 +271,8 @@ mod tests {
 
     #[test]
     fn hand_score_three_of_a_kind() {
-        let subject = Hand::try_from("6S 6H 6D JS 2C").unwrap();
-        assert_eq!(subject.score, Score::ThreeOfAKind);
+        let subject = Hand::try_from("5S 5H 5D JS 2C").unwrap();
+        assert_eq!(subject.score, Score::ThreeOfAKind(Rank::Five));
     }
 
     #[test_case("6S 6H JD JS 2C", Rank::Jack ; "In order")]
