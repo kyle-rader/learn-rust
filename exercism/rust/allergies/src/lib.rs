@@ -21,16 +21,13 @@ impl Allergies {
     }
 
     pub fn is_allergic_to(&self, allergen: &Allergen) -> bool {
-        self.0 & (*allergen as u32) == (*allergen as u32)
+        let allergen = *allergen as u32;
+        self.0 & allergen == allergen
     }
 
     pub fn allergies(&self) -> Vec<Allergen> {
-        let mut result: Vec<Allergen> = Vec::new();
-        for a in Allergen::into_enum_iter() {
-            if self.is_allergic_to(&a) {
-                result.push(a);
-            }
-        }
-        result
+        Allergen::into_enum_iter()
+            .filter(|a| self.is_allergic_to(a))
+            .collect()
     }
 }
