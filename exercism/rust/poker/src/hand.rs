@@ -75,8 +75,6 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     // Rebind as immutable
     let count_to_ranks = count_to_ranks;
 
-    let high_rank = cards.iter().last().unwrap().rank;
-
     // Royal Flush
     if suits.len() == 1 && ROYAL_FLUSH.into_iter().all(|r| ranks.contains_key(&r)) {
         return Score::RoyalFlush;
@@ -123,14 +121,14 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
 
     // Three of a Kind
     if trios.len() == 1 {
-        return Score::ThreeOfAKind(*trios.iter().nth(0).unwrap());
+        return Score::ThreeOfAKind;
     }
 
     // Two Pair
     match pairs.len() {
-        2 => Score::TwoPair(*pairs.iter().max().unwrap()),
-        1 => Score::Pair(*pairs.iter().nth(0).unwrap()),
-        _ => Score::HighCard(high_rank),
+        2 => Score::TwoPair,
+        1 => Score::Pair,
+        _ => Score::HighCard,
     }
 }
 
@@ -150,7 +148,7 @@ mod tests {
         let original = "4S 5S 7H 8D JC";
         let expected = Ok(Hand {
             hand: &original,
-            score: Score::HighCard(Rank::Jack),
+            score: Score::HighCard,
             cards: vec![
                 Card {
                     rank: Rank::Four,
@@ -272,26 +270,26 @@ mod tests {
     #[test]
     fn hand_score_three_of_a_kind() {
         let subject = Hand::try_from("5S 5H 5D JS 2C").unwrap();
-        assert_eq!(subject.score, Score::ThreeOfAKind(Rank::Five));
+        assert_eq!(subject.score, Score::ThreeOfAKind);
     }
 
-    #[test_case("6S 6H JD JS 2C", Rank::Jack ; "In order")]
-    #[test_case("6S JD JS 2C 6H", Rank::Jack ; "Out of order")]
-    #[test_case("KS JD 2C JS KH", Rank::King ; "Higher than Jack")]
-    fn hand_score_two_pair(input: &str, high_rank: Rank) {
+    #[test_case("6S 6H JD JS 2C" ; "In order")]
+    #[test_case("6S JD JS 2C 6H" ; "Out of order")]
+    #[test_case("KS JD 2C JS KH" ; "Higher than Jack")]
+    fn hand_score_two_pair(input: &str) {
         let subject = Hand::try_from(input).unwrap();
-        assert_eq!(subject.score, Score::TwoPair(high_rank));
+        assert_eq!(subject.score, Score::TwoPair);
     }
 
     #[test]
     fn hand_score_pair() {
         let subject = Hand::try_from("6S 3H JD JS 2C").unwrap();
-        assert_eq!(subject.score, Score::Pair(Rank::Jack));
+        assert_eq!(subject.score, Score::Pair);
     }
 
     #[test]
     fn hand_score_high_card() {
         let subject = Hand::try_from("6S 3H 10D JS 2C").unwrap();
-        assert_eq!(subject.score, Score::HighCard(Rank::Jack));
+        assert_eq!(subject.score, Score::HighCard);
     }
 }
