@@ -1,15 +1,17 @@
 use crate::rank::Rank;
 
+pub type Kickers = Vec<Rank>;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Score {
-    HighCard(Rank),
-    Pair(Rank),
-    TwoPair(Rank, Rank),
-    ThreeOfAKind(Rank),
-    Straight,
-    Flush,
-    FullHouse,
-    FourOfAKind,
-    StraightFlush,
+    HighCard { kickers: Kickers },
+    Pair { rank: Rank, kickers: Kickers },
+    TwoPair { high: Rank, low: Rank, kicker: Rank },
+    ThreeOfAKind { rank: Rank, kickers: Kickers },
+    Straight { rank: Rank },
+    Flush { kickers: Kickers },
+    FullHouse { trio: Rank, pair: Rank },
+    FourOfAKind { rank: Rank, kicker: Rank },
+    StraightFlush { rank: Rank },
     RoyalFlush,
 }

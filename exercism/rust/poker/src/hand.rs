@@ -7,7 +7,6 @@ use crate::{
     suit::Suit,
 };
 
-use enum_iterator::IntoEnumIterator;
 use thiserror::Error;
 
 #[derive(Debug, PartialEq, Error)]
@@ -26,16 +25,31 @@ pub struct Hand<'a> {
 }
 
 const HAND_SIZE: usize = 5;
-const ROYAL_FLUSH: &[Rank; 5] = &[Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace];
+
+// RANK_LIST for windows of straights - excluding ace low/high straights.
+const RANK_LIST: &[Rank; 12] = &[
+    Rank::Two,
+    Rank::Three,
+    Rank::Four,
+    Rank::Five,
+    Rank::Six,
+    Rank::Seven,
+    Rank::Eight,
+    Rank::Nine,
+    Rank::Ten,
+    Rank::Jack,
+    Rank::Queen,
+    Rank::King,
+];
+
+const STRAIGHT_ACE_LOW: &[Rank; 5] = &[Rank::Ace, Rank::Two, Rank::Three, Rank::Four, Rank::Five];
+const STRAIGHT_ACE_HIGH: &[Rank; 5] = &[Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace];
 
 impl<'a> TryFrom<&'a str> for Hand<'a> {
     type Error = HandParsingError;
 
     fn try_from(hand: &'a str) -> Result<Self, Self::Error> {
-        let mut cards = hand
-            .split_ascii_whitespace()
-            .map(Card::try_from)
-            .collect::<Result<Vec<Card>, CardParsingError>>()?;
+        let mut cards = cards(hand)?;
 
         if cards.len() != HAND_SIZE {
             return Err(HandParsingError::InvalidSize { n: cards.len() });
@@ -50,15 +64,23 @@ impl<'a> TryFrom<&'a str> for Hand<'a> {
     }
 }
 
+fn cards(hand: &str) -> Result<Vec<Card>, CardParsingError> {
+    hand.split_ascii_whitespace()
+        .map(Card::try_from)
+        .collect::<Result<Vec<Card>, CardParsingError>>()
+}
+
 fn calculate_score(cards: &Vec<Card>) -> Score {
     let mut ranks: HashMap<Rank, usize> = HashMap::new();
     let mut suits: HashMap<Suit, usize> = HashMap::new();
+    let mut kicker: HashSet<Rank> = HashSet::new();
 
     for card in cards.iter() {
         let rank_count = ranks.entry(card.rank).or_insert(0);
         *rank_count += 1;
         let suit_count = suits.entry(card.suit).or_insert(0);
         *suit_count += 1;
+        kicker.insert(card.rank);
     }
 
     let mut count_to_ranks: HashMap<usize, HashSet<Rank>> = HashMap::new();
@@ -66,75 +88,104 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
         let count_rank = count_to_ranks.entry(*count).or_default();
         count_rank.insert(*rank);
     }
-
-    // Ensure that each count does have a HashSet so that we do not have to borrow as mutable multiple times later.
-    for i in 0..=HAND_SIZE {
-        let _ = count_to_ranks.entry(i).or_default();
-    }
-
     // Rebind as immutable
     let count_to_ranks = count_to_ranks;
 
-    let high_rank = cards.iter().last().unwrap().rank;
+    // Other characteristics of the hand
+    let high_rank = cards.iter().last().unwrap().rank; // default high rank, Aces are high.
+    let is_flush = suits.len() == 1;
+    let is_straight_ace_high = STRAIGHT_ACE_HIGH.iter().all(|r| ranks.contains_key(&r));
+    let is_straight_ace_low = STRAIGHT_ACE_LOW.iter().all(|r| ranks.contains_key(&r));
+    let is_straight = RANK_LIST
+        .windows(HAND_SIZE)
+        .any(|flush| flush.iter().all(|r| ranks.contains_key(r)))
+        || is_straight_ace_high
+        || is_straight_ace_low;
 
     // Royal Flush
-    if suits.len() == 1 && ROYAL_FLUSH.into_iter().all(|r| ranks.contains_key(&r)) {
+    if is_straight_ace_high && is_flush {
         return Score::RoyalFlush;
     }
 
     // Straight Flush
-    let mut all_ranks = Vec::new();
-    for r in Rank::into_enum_iter() {
-        all_ranks.push(r);
-    }
-
-    let is_straight = all_ranks
-        .windows(HAND_SIZE)
-        .any(|flush| flush.iter().all(|r| ranks.contains_key(r)));
-
-    let is_flush = suits.len() == 1;
-
     if is_straight && is_flush {
-        return Score::StraightFlush;
+        let rank = if is_straight_ace_low {
+            Rank::Five
+        } else {
+            high_rank
+        };
+        return Score::StraightFlush { rank };
     }
 
     // Four of a Kind
-    if count_to_ranks.get(&4).unwrap().len() == 1 {
-        return Score::FourOfAKind;
+    if let Some(four_of_a_kind_rank) = count_to_ranks.get(&4) {
+        let rank = *four_of_a_kind_rank.iter().nth(0).unwrap();
+        kicker.remove(&rank);
+        return Score::FourOfAKind {
+            rank,
+            kicker: kicker.into_iter().nth(0).unwrap(),
+        };
     }
 
     // Full House
-    let trios = count_to_ranks.get(&3).unwrap();
-    let pairs = count_to_ranks.get(&2).unwrap();
+    let trios = count_to_ranks.get(&3);
+    let pairs = count_to_ranks.get(&2);
 
-    if trios.len() == 1 && pairs.len() == 1 {
-        return Score::FullHouse;
+    if let Some(trios) = trios {
+        if let Some(pairs) = pairs {
+            let trio = *trios.iter().nth(0).unwrap();
+            let pair = *pairs.iter().nth(0).unwrap();
+            return Score::FullHouse { trio, pair };
+        }
     }
 
     // Flush
     if is_flush {
-        return Score::Flush;
+        let mut kickers: Vec<Rank> = kicker.into_iter().collect();
+        kickers.sort();
+        return Score::Flush { kickers };
     }
 
     // Straight
     if is_straight {
-        return Score::Straight;
+        return Score::Straight { rank: high_rank };
     }
 
     // Three of a Kind
-    if trios.len() == 1 {
-        return Score::ThreeOfAKind(*trios.iter().nth(0).unwrap());
+    if let Some(trios) = trios {
+        let rank = *trios.iter().nth(0).unwrap();
+        kicker.remove(&rank);
+        let mut kickers: Vec<Rank> = kicker.into_iter().collect();
+        kickers.sort();
+        return Score::ThreeOfAKind { rank, kickers };
     }
 
     // Two Pair
-    match pairs.len() {
-        2 => {
-            let mut pair_ranks: Vec<Rank> = pairs.iter().map(|r| *r).collect();
-            pair_ranks.sort();
-            Score::TwoPair(pair_ranks[0], pair_ranks[1])
+    if let Some(pairs) = pairs {
+        let mut pair_ranks: Vec<Rank> = pairs.iter().copied().collect();
+        pair_ranks.sort();
+        for r in pair_ranks.iter() {
+            kicker.remove(r);
         }
-        1 => Score::Pair(*pairs.iter().nth(0).unwrap()),
-        _ => Score::HighCard(high_rank),
+
+        if pairs.len() == 2 {
+            Score::TwoPair {
+                low: pair_ranks[0],
+                high: pair_ranks[1],
+                kicker: kicker.into_iter().nth(0).unwrap(),
+            }
+        } else {
+            let mut kickers: Vec<Rank> = kicker.into_iter().collect();
+            kickers.sort();
+            Score::Pair {
+                rank: pair_ranks[0],
+                kickers,
+            }
+        }
+    } else {
+        let mut kickers: Vec<Rank> = kicker.into_iter().collect();
+        kickers.sort();
+        Score::HighCard { kickers }
     }
 }
 
@@ -151,10 +202,13 @@ mod tests {
 
     #[test]
     fn can_make_a_hand() {
-        let original = "4S 5S 7H 8D JC";
+        let original = "JC 4S 7H 5S 8D";
+
         let expected = Ok(Hand {
             hand: &original,
-            score: Score::HighCard(Rank::Jack),
+            score: Score::HighCard {
+                kickers: vec![Rank::Four, Rank::Five, Rank::Seven, Rank::Eight, Rank::Jack],
+            },
             cards: vec![
                 Card {
                     rank: Rank::Four,
@@ -229,33 +283,33 @@ mod tests {
         assert_eq!(subject.score, Score::RoyalFlush);
     }
 
-    #[test_case("AS 2S 3S 4S 5S")]
-    #[test_case("2S 3S 4S 5S 6S")]
-    #[test_case("3S 4S 5S 6S 7S")]
-    #[test_case("4S 5S 6S 7S 8S")]
-    #[test_case("5S 6S 7S 8S 9S")]
-    #[test_case("6S 7S 8S 9S 10S")]
-    #[test_case("7S 8S 9S 10S JS")]
-    #[test_case("8S 9S 10S JS QS")]
-    #[test_case("9S 10S JS QS KS")]
-    fn hand_score_straight_flush(input: &str) {
+    #[test_case("AS 2S 3S 4S 5S", Rank::Five)]
+    #[test_case("2S 3S 4S 5S 6S", Rank::Six)]
+    #[test_case("3S 4S 5S 6S 7S", Rank::Seven)]
+    #[test_case("4S 5S 6S 7S 8S", Rank::Eight)]
+    #[test_case("5S 6S 7S 8S 9S", Rank::Nine)]
+    #[test_case("6S 7S 8S 9S 10S", Rank::Ten)]
+    #[test_case("7S 8S 9S 10S JS", Rank::Jack)]
+    #[test_case("8S 9S 10S JS QS", Rank::Queen)]
+    #[test_case("9S 10S JS QS KS", Rank::King)]
+    fn hand_score_straight_flush(input: &str, rank: Rank) {
         let subject = Hand::try_from(input).unwrap();
-        assert_eq!(subject.score, Score::StraightFlush);
+        assert_eq!(subject.score, Score::StraightFlush { rank });
     }
 
-    #[test_case("4S 4C 4H 4D KS")]
-    #[test_case("AS AC AH AD 3S")]
-    fn hand_score_four_of_a_kind(input: &str) {
+    #[test_case("4S 4C 4H 4D KS", Rank::Four, Rank::King)]
+    #[test_case("AS AC AH AD 3S", Rank::Ace, Rank::Three)]
+    fn hand_score_four_of_a_kind(input: &str, rank: Rank, kicker: Rank) {
         let subject = Hand::try_from(input).unwrap();
-        assert_eq!(subject.score, Score::FourOfAKind);
+        assert_eq!(subject.score, Score::FourOfAKind { rank, kicker });
     }
 
-    #[test_case("4S 4C KH KD KS" ; "In order")]
-    #[test_case("4C KH 4S KD KS" ; "Out of order")]
-    #[test_case("AC KH AS KD AS" ; "With Aces")]
-    fn hand_score_full_house(input: &str) {
+    #[test_case("4S 4C KH KD KS", Rank::King, Rank::Four ; "In order")]
+    #[test_case("4C KH 4S KD KS", Rank::King, Rank::Four ; "Out of order")]
+    #[test_case("AC KH AS KD AS", Rank::Ace, Rank::King ; "With Aces")]
+    fn hand_score_full_house(input: &str, trio: Rank, pair: Rank) {
         let subject = Hand::try_from(input).unwrap();
-        assert_eq!(subject.score, Score::FullHouse);
+        assert_eq!(subject.score, Score::FullHouse { trio, pair });
     }
 
     #[test_case("4S 5S 2S 9S KS" ; "Spades")]
@@ -264,38 +318,61 @@ mod tests {
     #[test_case("4H 5H 2H 9H KH" ; "Hearts")]
     fn hand_score_flush(input: &str) {
         let subject = Hand::try_from(input).unwrap();
-        assert_eq!(subject.score, Score::Flush);
+        assert!(matches!(subject.score, Score::Flush { .. }));
+    }
+
+    #[test]
+    #[ignore]
+    fn hand_score_flush_with_kicker() {
+        todo!()
     }
 
     #[test]
     fn hand_score_straight() {
         let subject = Hand::try_from("4S 5C 6S 7D 8H").unwrap();
-        assert_eq!(subject.score, Score::Straight);
+        assert_eq!(subject.score, Score::Straight { rank: Rank::Eight });
     }
 
     #[test]
     fn hand_score_three_of_a_kind() {
         let subject = Hand::try_from("5S 5H 5D JS 2C").unwrap();
-        assert_eq!(subject.score, Score::ThreeOfAKind(Rank::Five));
+        assert_eq!(
+            subject.score,
+            Score::ThreeOfAKind {
+                rank: Rank::Five,
+                kickers: vec![Rank::Two, Rank::Jack],
+            }
+        );
     }
 
-    #[test_case("6S 6H JD JS 2C", Rank::Six, Rank::Jack ; "In order")]
-    #[test_case("6S JD JS 2C 6H", Rank::Six, Rank::Jack ; "Out of order")]
-    #[test_case("KS JD 2C JS KH", Rank::Jack, Rank::King ; "Higher than Jack")]
-    fn hand_score_two_pair(input: &str, high_rank1: Rank, high_rank2: Rank) {
+    #[test_case("6S 6H JD JS 2C", Rank::Jack, Rank::Six, Rank::Two ; "In order")]
+    #[test_case("6S JD JS 2C 6H", Rank::Jack, Rank::Six, Rank::Two ; "Out of order")]
+    #[test_case("KS JD 5C JS KH", Rank::King, Rank::Jack, Rank::Five ; "Higher than Jack")]
+    fn hand_score_two_pair(input: &str, high: Rank, low: Rank, kicker: Rank) {
         let subject = Hand::try_from(input).unwrap();
-        assert_eq!(subject.score, Score::TwoPair(high_rank1, high_rank2));
+        assert_eq!(subject.score, Score::TwoPair { high, low, kicker });
     }
 
     #[test]
     fn hand_score_pair() {
         let subject = Hand::try_from("6S 3H JD JS 2C").unwrap();
-        assert_eq!(subject.score, Score::Pair(Rank::Jack));
+        assert_eq!(
+            subject.score,
+            Score::Pair {
+                rank: Rank::Jack,
+                kickers: vec![Rank::Two, Rank::Three, Rank::Six]
+            }
+        );
     }
 
     #[test]
     fn hand_score_high_card() {
         let subject = Hand::try_from("6S 3H 10D JS 2C").unwrap();
-        assert_eq!(subject.score, Score::HighCard(Rank::Jack));
+        assert_eq!(
+            subject.score,
+            Score::HighCard {
+                kickers: vec![Rank::Two, Rank::Three, Rank::Six, Rank::Ten, Rank::Jack]
+            }
+        );
     }
 }

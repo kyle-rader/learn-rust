@@ -1,9 +1,7 @@
-use enum_iterator::IntoEnumIterator;
 use thiserror::Error;
 
-#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Copy, Clone, IntoEnumIterator)]
+#[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Copy, Clone)]
 pub enum Rank {
-    Ace,
     Two,
     Three,
     Four,
@@ -16,6 +14,7 @@ pub enum Rank {
     Jack,
     Queen,
     King,
+    Ace,
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -29,7 +28,6 @@ impl TryFrom<&str> for Rank {
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         match s {
-            "A" => Ok(Rank::Ace),
             "2" => Ok(Rank::Two),
             "3" => Ok(Rank::Three),
             "4" => Ok(Rank::Four),
@@ -42,6 +40,7 @@ impl TryFrom<&str> for Rank {
             "J" => Ok(Rank::Jack),
             "Q" => Ok(Rank::Queen),
             "K" => Ok(Rank::King),
+            "A" => Ok(Rank::Ace),
             _ => Err(RankParsingError::InvalidRank {
                 rank: String::from(s),
             }),
@@ -84,7 +83,6 @@ mod test {
     #[test]
     fn rank_is_sortable() {
         let expected = vec![
-            Rank::Ace,
             Rank::Two,
             Rank::Three,
             Rank::Four,
@@ -97,6 +95,7 @@ mod test {
             Rank::Jack,
             Rank::Queen,
             Rank::King,
+            Rank::Ace,
         ];
 
         let mut subject = vec![
@@ -110,9 +109,9 @@ mod test {
             Rank::Six,
             Rank::Five,
             Rank::Four,
+            Rank::Ace,
             Rank::Three,
             Rank::Two,
-            Rank::Ace,
         ];
 
         subject.sort();

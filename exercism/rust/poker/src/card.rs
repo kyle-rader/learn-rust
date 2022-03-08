@@ -101,10 +101,6 @@ mod card_tests {
     fn card_can_sort() {
         let expected = vec![
             Card {
-                rank: Rank::Ace,
-                suit: Suit::Clubs,
-            },
-            Card {
                 rank: Rank::Four,
                 suit: Suit::Spades,
             },
@@ -115,6 +111,10 @@ mod card_tests {
             Card {
                 rank: Rank::King,
                 suit: Suit::Hearts,
+            },
+            Card {
+                rank: Rank::Ace,
+                suit: Suit::Clubs,
             },
         ];
 
