@@ -94,6 +94,52 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     // Other characteristics of the hand
     let high_rank = cards.iter().last().unwrap().rank; // default high rank, Aces are high.
     let is_flush = suits.len() == 1;
+    let trios = count_to_ranks.get(&3);
+    let pairs = count_to_ranks.get(&2);
+
+    // Single Pair is ~42% of hands so check for that first
+    if let Some(pairs) = pairs {
+        let mut pair_ranks: Vec<Rank> = pairs.iter().copied().collect();
+        pair_ranks.sort();
+        for r in pair_ranks.iter() {
+            kicker.remove(r);
+        }
+
+        if let Some(trios) = trios {
+            // Full House
+            let trio = *trios.iter().nth(0).unwrap();
+            let pair = *pairs.iter().nth(0).unwrap();
+            return Score::FullHouse { trio, pair };
+        }
+
+        return if pairs.len() == 2 {
+            // Two Pair
+            Score::TwoPair {
+                low: pair_ranks[0],
+                high: pair_ranks[1],
+                kicker: kicker.into_iter().nth(0).unwrap(),
+            }
+        } else {
+            // Single Pair
+            let mut kickers: Vec<Rank> = kicker.into_iter().collect();
+            kickers.sort();
+            Score::Pair {
+                rank: pair_ranks[0],
+                kickers,
+            }
+        };
+    }
+
+    // Three of a Kind
+    if let Some(trios) = trios {
+        let rank = *trios.iter().nth(0).unwrap();
+        kicker.remove(&rank);
+        let mut kickers: Vec<Rank> = kicker.into_iter().collect();
+        kickers.sort();
+        return Score::ThreeOfAKind { rank, kickers };
+    }
+
+    // Straight stats
     let is_straight_ace_high = STRAIGHT_ACE_HIGH.iter().all(|r| ranks.contains_key(&r));
     let is_straight_ace_low = STRAIGHT_ACE_LOW.iter().all(|r| ranks.contains_key(&r));
     let is_straight = RANK_LIST
@@ -127,18 +173,6 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
         };
     }
 
-    // Full House
-    let trios = count_to_ranks.get(&3);
-    let pairs = count_to_ranks.get(&2);
-
-    if let Some(trios) = trios {
-        if let Some(pairs) = pairs {
-            let trio = *trios.iter().nth(0).unwrap();
-            let pair = *pairs.iter().nth(0).unwrap();
-            return Score::FullHouse { trio, pair };
-        }
-    }
-
     // Flush
     if is_flush {
         let mut kickers: Vec<Rank> = kicker.into_iter().collect();
@@ -151,42 +185,10 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
         return Score::Straight { rank: high_rank };
     }
 
-    // Three of a Kind
-    if let Some(trios) = trios {
-        let rank = *trios.iter().nth(0).unwrap();
-        kicker.remove(&rank);
-        let mut kickers: Vec<Rank> = kicker.into_iter().collect();
-        kickers.sort();
-        return Score::ThreeOfAKind { rank, kickers };
-    }
-
-    // Two Pair
-    if let Some(pairs) = pairs {
-        let mut pair_ranks: Vec<Rank> = pairs.iter().copied().collect();
-        pair_ranks.sort();
-        for r in pair_ranks.iter() {
-            kicker.remove(r);
-        }
-
-        if pairs.len() == 2 {
-            Score::TwoPair {
-                low: pair_ranks[0],
-                high: pair_ranks[1],
-                kicker: kicker.into_iter().nth(0).unwrap(),
-            }
-        } else {
-            let mut kickers: Vec<Rank> = kicker.into_iter().collect();
-            kickers.sort();
-            Score::Pair {
-                rank: pair_ranks[0],
-                kickers,
-            }
-        }
-    } else {
-        let mut kickers: Vec<Rank> = kicker.into_iter().collect();
-        kickers.sort();
-        Score::HighCard { kickers }
-    }
+    // High Card remains
+    let mut kickers: Vec<Rank> = kicker.into_iter().collect();
+    kickers.sort();
+    Score::HighCard { kickers }
 }
 
 #[cfg(test)]
