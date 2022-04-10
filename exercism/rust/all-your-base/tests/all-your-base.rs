@@ -13,7 +13,6 @@ fn single_bit_one_to_decimal() {
 }
 
 #[test]
-#[ignore]
 fn binary_to_single_decimal() {
     let input_base = 2;
     let input_digits = &[1, 0, 1];
@@ -26,7 +25,6 @@ fn binary_to_single_decimal() {
 }
 
 #[test]
-#[ignore]
 fn single_decimal_to_binary() {
     let input_base = 10;
     let input_digits = &[5];
