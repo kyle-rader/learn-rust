@@ -17,11 +17,17 @@ pub enum HandParsingError {
     CardError(#[from] CardParsingError),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct Hand<'a> {
     pub hand: &'a str,
     pub cards: Vec<Card>,
     pub score: Score,
+}
+
+impl<'a> PartialEq for Hand<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        self.score == other.score
+    }
 }
 
 const HAND_SIZE: usize = 5;
@@ -376,5 +382,32 @@ mod tests {
                 kickers: vec![Rank::Two, Rank::Three, Rank::Six, Rank::Ten, Rank::Jack]
             }
         );
+    }
+
+    #[test]
+    fn hand_eq_based_on_score() {
+        let hand1 = Hand::try_from("10S JS QS KS AS").unwrap();
+        let hand2 = Hand::try_from("10D JD QD KD AD").unwrap();
+        assert!(hand1 == hand2)
+    }
+
+    #[test]
+    fn hand_not_eq_based_on_score() {
+        let hand1 = Hand::try_from("5S JS QS KS AS").unwrap();
+        let hand2 = Hand::try_from("10D JD QD KD AD").unwrap();
+        assert!(hand1 != hand2)
+    }
+
+    #[test]
+    #[ignore]
+    fn hands_are_sortable_by_score() {
+        let hands = ["3H 3S 3D 7D 7C", "10S JS QS KS AS"];
+
+        let mut hands = hands
+            .iter()
+            .filter_map(|v| Hand::try_from(*v).ok())
+            .collect::<Vec<Hand>>();
+
+        // hands.sort();
     }
 }
