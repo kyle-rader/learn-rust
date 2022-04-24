@@ -198,7 +198,7 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
 }
 
 #[cfg(test)]
-mod tests {
+mod hand_tests {
     use crate::{
         rank::{Rank, RankParsingError},
         score::Score,
@@ -330,9 +330,14 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn hand_score_flush_with_kicker() {
-        todo!()
+        let subject = Hand::try_from("4H 5H 2H 9H KH").unwrap();
+        assert_eq!(
+            subject.score,
+            Score::Flush {
+                kickers: vec![Rank::Two, Rank::Four, Rank::Five, Rank::Nine, Rank::King,]
+            }
+        );
     }
 
     #[test]
