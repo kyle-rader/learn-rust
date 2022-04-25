@@ -1,8 +1,12 @@
-use thiserror::Error;
+// use thiserror::Error;
 
-#[derive(Debug, PartialEq, Error)]
+// #[derive(Debug, PartialEq, Error)]
+// pub enum SuitParsingError {
+//     #[error("'{suit}' is not a suit.")]
+//     InvalidSuit { suit: char },
+// }
+#[derive(Debug, PartialEq)]
 pub enum SuitParsingError {
-    #[error("'{suit}' is not a suit.")]
     InvalidSuit { suit: char },
 }
 
