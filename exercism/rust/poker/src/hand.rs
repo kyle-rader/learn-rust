@@ -167,6 +167,11 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
         .any(|flush| flush.iter().all(|r| ranks.contains_key(r)))
         || is_straight_ace_high
         || is_straight_ace_low;
+    let straight_rank = if is_straight_ace_low {
+        Rank::Five
+    } else {
+        high_rank
+    };
 
     // Royal Flush
     if is_straight_ace_high && is_flush {
@@ -175,12 +180,9 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
 
     // Straight Flush
     if is_straight && is_flush {
-        let rank = if is_straight_ace_low {
-            Rank::Five
-        } else {
-            high_rank
+        return Score::StraightFlush {
+            rank: straight_rank,
         };
-        return Score::StraightFlush { rank };
     }
 
     // Four of a Kind
@@ -202,7 +204,9 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
 
     // Straight
     if is_straight {
-        return Score::Straight { rank: high_rank };
+        return Score::Straight {
+            rank: straight_rank,
+        };
     }
 
     // High Card remains
@@ -358,6 +362,12 @@ mod hand_tests {
     fn hand_score_straight() {
         let subject = Hand::try_from("4S 5C 6S 7D 8H").unwrap();
         assert_eq!(subject.score, Score::Straight { rank: Rank::Eight });
+    }
+
+    #[test]
+    fn hand_score_straight_ace_low() {
+        let subject = Hand::try_from("4S AH 3S 2D 5H").unwrap();
+        assert_eq!(subject.score, Score::Straight { rank: Rank::Five });
     }
 
     #[test]

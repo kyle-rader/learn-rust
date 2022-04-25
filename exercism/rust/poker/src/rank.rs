@@ -49,7 +49,7 @@ impl TryFrom<&str> for Rank {
 }
 
 #[cfg(test)]
-mod test {
+mod rank_tests {
     use super::*;
     use test_case::test_case;
 
