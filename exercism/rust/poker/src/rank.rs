@@ -118,4 +118,19 @@ mod test {
 
         assert_eq!(subject, expected);
     }
+
+    #[test]
+    fn rank_is_sortable_in_reverse() {
+        let expected = vec![Rank::King, Rank::Jack, Rank::Three];
+        let mut subject = vec![Rank::Jack, Rank::Three, Rank::King];
+        subject.sort_by(|a, b| b.cmp(a));
+        assert_eq!(expected, subject);
+    }
+
+    #[test_case(vec![Rank::Queen], vec![Rank::King])]
+    #[test_case(vec![Rank::King, Rank::Ten], vec![Rank::King, Rank::Jack])]
+    #[test_case(vec![Rank::King, Rank::Ten, Rank::Seven], vec![Rank::King, Rank::Ten, Rank::Eight])]
+    fn vec_of_rank_is_comparable(a: Vec<Rank>, b: Vec<Rank>) {
+        assert!(a < b);
+    }
 }

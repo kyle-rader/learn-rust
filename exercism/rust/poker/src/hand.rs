@@ -30,6 +30,20 @@ impl<'a> PartialEq for Hand<'a> {
     }
 }
 
+impl<'a> Eq for Hand<'a> {}
+
+impl<'a> PartialOrd for Hand<'a> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.score.partial_cmp(&other.score)
+    }
+}
+
+impl<'a> Ord for Hand<'a> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.score.cmp(&other.score)
+    }
+}
+
 const HAND_SIZE: usize = 5;
 
 // RANK_LIST for windows of straights - excluding ace low/high straights.
@@ -128,7 +142,7 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
         } else {
             // Single Pair
             let mut kickers: Vec<Rank> = kicker.into_iter().collect();
-            kickers.sort();
+            kickers.sort_by(|a, b| b.cmp(a));
             Score::Pair {
                 rank: pair_ranks[0],
                 kickers,
@@ -141,7 +155,7 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
         let rank = *trios.iter().nth(0).unwrap();
         kicker.remove(&rank);
         let mut kickers: Vec<Rank> = kicker.into_iter().collect();
-        kickers.sort();
+        kickers.sort_by(|a, b| b.cmp(a));
         return Score::ThreeOfAKind { rank, kickers };
     }
 
@@ -182,7 +196,7 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
     // Flush
     if is_flush {
         let mut kickers: Vec<Rank> = kicker.into_iter().collect();
-        kickers.sort();
+        kickers.sort_by(|a, b| b.cmp(a));
         return Score::Flush { kickers };
     }
 
@@ -193,7 +207,7 @@ fn calculate_score(cards: &Vec<Card>) -> Score {
 
     // High Card remains
     let mut kickers: Vec<Rank> = kicker.into_iter().collect();
-    kickers.sort();
+    kickers.sort_by(|a, b| b.cmp(a));
     Score::HighCard { kickers }
 }
 
@@ -215,7 +229,7 @@ mod hand_tests {
         let expected = Ok(Hand {
             hand: &original,
             score: Score::HighCard {
-                kickers: vec![Rank::Four, Rank::Five, Rank::Seven, Rank::Eight, Rank::Jack],
+                kickers: vec![Rank::Jack, Rank::Eight, Rank::Seven, Rank::Five, Rank::Four],
             },
             cards: vec![
                 Card {
@@ -335,7 +349,7 @@ mod hand_tests {
         assert_eq!(
             subject.score,
             Score::Flush {
-                kickers: vec![Rank::Two, Rank::Four, Rank::Five, Rank::Nine, Rank::King,]
+                kickers: vec![Rank::King, Rank::Nine, Rank::Five, Rank::Four, Rank::Two,]
             }
         );
     }
@@ -353,7 +367,7 @@ mod hand_tests {
             subject.score,
             Score::ThreeOfAKind {
                 rank: Rank::Five,
-                kickers: vec![Rank::Two, Rank::Jack],
+                kickers: vec![Rank::Jack, Rank::Two,],
             }
         );
     }
@@ -373,7 +387,7 @@ mod hand_tests {
             subject.score,
             Score::Pair {
                 rank: Rank::Jack,
-                kickers: vec![Rank::Two, Rank::Three, Rank::Six]
+                kickers: vec![Rank::Six, Rank::Three, Rank::Two]
             }
         );
     }
@@ -384,7 +398,7 @@ mod hand_tests {
         assert_eq!(
             subject.score,
             Score::HighCard {
-                kickers: vec![Rank::Two, Rank::Three, Rank::Six, Rank::Ten, Rank::Jack]
+                kickers: vec![Rank::Jack, Rank::Ten, Rank::Six, Rank::Three, Rank::Two]
             }
         );
     }
@@ -404,7 +418,6 @@ mod hand_tests {
     }
 
     #[test]
-    #[ignore]
     fn hands_are_sortable_by_score() {
         let hands = ["3H 3S 3D 7D 7C", "10S JS QS KS AS"];
 
@@ -413,6 +426,19 @@ mod hand_tests {
             .filter_map(|v| Hand::try_from(*v).ok())
             .collect::<Vec<Hand>>();
 
-        // hands.sort();
+        hands.sort();
+        hands.reverse();
+
+        assert!(matches!(
+            hands.iter().nth(0).unwrap().score,
+            Score::RoyalFlush
+        ));
+        assert!(matches!(
+            hands.iter().nth(1).unwrap().score,
+            Score::FullHouse {
+                trio: Rank::Three,
+                pair: Rank::Seven
+            }
+        ));
     }
 }
