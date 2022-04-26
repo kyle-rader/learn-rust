@@ -56,6 +56,7 @@ fn test_several_matching_triplets() {
 }
 
 #[test]
+#[ignore]
 fn test_triplets_for_large_number() {
     process_tripletswithsum_case(
         30_000,
