@@ -1,16 +1,26 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 type Key = HashMap<char, u8>;
 
 pub fn solve(input: &str) -> Option<Key> {
-    let solution: &[(char, u8)] = &[('I', 1u8), ('B', 9u8), ('L', 0u8)];
-    let key: Key = solution.iter().cloned().collect();
+    let key = HashMap::from([('I', 1), ('B', 9), ('L', 0)]);
 
     if test_key(&key, input) {
         Some(key)
     } else {
         None
     }
+}
+
+pub fn chars_we_care_about(input: &str) -> Vec<char> {
+    let skip_chars: HashSet<char> = HashSet::from([' ', '+', '=']);
+    input
+        .chars()
+        .filter(|c| !skip_chars.contains(&c))
+        .collect::<HashSet<char>>()
+        .iter()
+        .cloned()
+        .collect()
 }
 
 fn test_key(key: &Key, input: &str) -> bool {

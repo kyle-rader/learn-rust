@@ -7,6 +7,20 @@ fn assert_alphametic_solution_eq(puzzle: &str, solution: &[(char, u8)]) {
 }
 
 #[test]
+fn test_chars_we_care_about_all_distinct() {
+    let subject = alphametics::chars_we_care_about("ABC + DEF == GH");
+    let expected = vec!['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    assert_eq!(subject, expected);
+}
+
+#[test]
+fn test_chars_we_care_about_should_be_a_set() {
+    let subject = alphametics::chars_we_care_about("ABB + DEE == GH");
+    let expected = vec!['A', 'B', 'D', 'E', 'G', 'H'];
+    assert_eq!(subject, expected);
+}
+
+#[test]
 fn test_with_three_letters() {
     assert_alphametic_solution_eq("I + BB == ILL", &[('I', 1), ('B', 9), ('L', 0)]);
 }
