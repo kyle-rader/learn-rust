@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use alphametics::{test_key, MyParseError};
+
 fn assert_alphametic_solution_eq(puzzle: &str, solution: &[(char, u8)]) {
     let answer = alphametics::solve(puzzle);
     let solution: HashMap<char, u8> = solution.iter().cloned().collect();
@@ -9,15 +11,36 @@ fn assert_alphametic_solution_eq(puzzle: &str, solution: &[(char, u8)]) {
 #[test]
 fn test_chars_we_care_about_all_distinct() {
     let subject = alphametics::chars_we_care_about("ABC + DEF == GH");
-    let expected = vec!['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    let expected = vec!['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].into_iter().collect();
     assert_eq!(subject, expected);
 }
 
 #[test]
 fn test_chars_we_care_about_should_be_a_set() {
     let subject = alphametics::chars_we_care_about("ABB + DEE == GH");
-    let expected = vec!['A', 'B', 'D', 'E', 'G', 'H'];
+    let expected = vec!['A', 'B', 'D', 'E', 'G', 'H'].into_iter().collect();
     assert_eq!(subject, expected);
+}
+
+#[test]
+fn test_test_key_3_letter_correct() {
+    let input = "I  + BB == ILL";
+    let key = HashMap::from([('I', 1), ('B', 9), ('L', 0)]);
+    assert_eq!(test_key(input, &key), Ok(true));
+}
+
+#[test]
+fn test_test_key_3_letter_incorrect() {
+    let input = "I + BB == LL";
+    let key = HashMap::from([('I', 1), ('B', 5), ('L', 2)]);
+    assert_eq!(test_key(input, &key), Ok(false));
+}
+
+#[test]
+fn test_test_key_3_letter_no_leading_zero() {
+    let input = "I + BB == LL";
+    let key = HashMap::from([('I', 0), ('B', 5), ('L', 2)]);
+    assert_eq!(test_key(input, &key), Err(MyParseError::LeadingZero));
 }
 
 #[test]
@@ -26,14 +49,12 @@ fn test_with_three_letters() {
 }
 
 #[test]
-#[ignore]
 fn test_must_have_unique_value_for_each_letter() {
     let answer = alphametics::solve("A == B");
     assert_eq!(answer, None);
 }
 
 #[test]
-#[ignore]
 fn test_leading_zero_solution_is_invalid() {
     let answer = alphametics::solve("ACA + DD == BD");
     assert_eq!(answer, None);
@@ -47,7 +68,6 @@ fn test_sum_must_be_wide_enough() {
 }
 
 #[test]
-#[ignore]
 fn puzzle_with_two_digits_final_carry() {
     assert_alphametic_solution_eq(
         "A + A + A + A + A + A + A + A + A + A + A + B == BCC",
@@ -56,13 +76,11 @@ fn puzzle_with_two_digits_final_carry() {
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_four_letters() {
     assert_alphametic_solution_eq("AS + A == MOM", &[('A', 9), ('S', 2), ('M', 1), ('O', 0)]);
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_six_letters() {
     assert_alphametic_solution_eq(
         "NO + NO + TOO == LATE",
@@ -71,7 +89,6 @@ fn test_puzzle_with_six_letters() {
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_seven_letters() {
     assert_alphametic_solution_eq(
         "HE + SEES + THE == LIGHT",
@@ -88,7 +105,6 @@ fn test_puzzle_with_seven_letters() {
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_eight_letters() {
     assert_alphametic_solution_eq(
         "SEND + MORE == MONEY",
@@ -106,7 +122,6 @@ fn test_puzzle_with_eight_letters() {
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_ten_letters() {
     assert_alphametic_solution_eq(
         "AND + A + STRONG + OFFENSE + AS + A + GOOD == DEFENSE",
@@ -126,7 +141,6 @@ fn test_puzzle_with_ten_letters() {
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_ten_letters_and_199_addends() {
     assert_alphametic_solution_eq(
         "THIS + A + FIRE + THEREFORE + FOR + ALL + HISTORIES + I + TELL + A + TALE + THAT + FALSIFIES + ITS + TITLE + TIS + A + LIE + THE + TALE + OF + THE + LAST + FIRE + HORSES + LATE + AFTER + THE + FIRST + FATHERS + FORESEE + THE + HORRORS + THE + LAST + FREE + TROLL + TERRIFIES + THE + HORSES + OF + FIRE + THE + TROLL + RESTS + AT + THE + HOLE + OF + LOSSES + IT + IS + THERE + THAT + SHE + STORES + ROLES + OF + LEATHERS + AFTER + SHE + SATISFIES + HER + HATE + OFF + THOSE + FEARS + A + TASTE + RISES + AS + SHE + HEARS + THE + LEAST + FAR + HORSE + THOSE + FAST + HORSES + THAT + FIRST + HEAR + THE + TROLL + FLEE + OFF + TO + THE + FOREST + THE + HORSES + THAT + ALERTS + RAISE + THE + STARES + OF + THE + OTHERS + AS + THE + TROLL + ASSAILS + AT + THE + TOTAL + SHIFT + HER + TEETH + TEAR + HOOF + OFF + TORSO + AS + THE + LAST + HORSE + FORFEITS + ITS + LIFE + THE + FIRST + FATHERS + HEAR + OF + THE + HORRORS + THEIR + FEARS + THAT + THE + FIRES + FOR + THEIR + FEASTS + ARREST + AS + THE + FIRST + FATHERS + RESETTLE + THE + LAST + OF + THE + FIRE + HORSES + THE + LAST + TROLL + HARASSES + THE + FOREST + HEART + FREE + AT + LAST + OF + THE + LAST + TROLL + ALL + OFFER + THEIR + FIRE + HEAT + TO + THE + ASSISTERS + FAR + OFF + THE + TROLL + FASTS + ITS + LIFE + SHORTER + AS + STARS + RISE + THE + HORSES + REST + SAFE + AFTER + ALL + SHARE + HOT + FISH + AS + THEIR + AFFILIATES + TAILOR + A + ROOFS + FOR + THEIR + SAFE == FORTRESSES",
