@@ -98,12 +98,7 @@ fn problems(root: &Path) -> Result<Vec<(String, PathBuf)>, Box<dyn std::error::E
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>>  {
-    println!("Testing Solutions...");
-
-    let mut root = git_root()?;
-    root.push("exercism");
-    root.push("rust");
-    let root = root;
+    let root = git_root()?.join("exercism").join("rust");
 
     let mut results: Vec<Problem> = Vec::new();
     for (name, path) in problems(&root)? {
