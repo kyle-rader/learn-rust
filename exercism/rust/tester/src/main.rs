@@ -16,7 +16,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>>  {
         let problem = entry?.path();
         if !problem.is_dir() { continue; }
 
-        let name = problem.display();
+        let name = problem
+            .file_name()
+            .ok_or("🤔 no problem?")?
+            .to_str()
+            .ok_or("🤔 no problem?")?;
+
         // caching
         let snt = problem.join("done.snt");
         if snt.exists() {
