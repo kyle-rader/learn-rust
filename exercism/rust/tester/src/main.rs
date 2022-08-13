@@ -103,10 +103,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>>  {
     let mut results: Vec<Problem> = Vec::new();
     for (name, path) in problems(&root)? {
         match Problem::test(name.clone(), path) {
-            Ok(problem) => results.push(problem),
+            Ok(problem) => {
+                print!(".");
+                results.push(problem);
+            },
             Err(e) => println!("⚠️ {name} {e}"),
         }
     }
+    println!();
+
     results.sort();
 
     for r in results {
