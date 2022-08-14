@@ -15,6 +15,6 @@
 # done
 
 # This is The Way
-pushd ./tester
-cargo run
-popd
+pushd ./tester > /dev/null
+cargo run -q
+popd > /dev/null
