@@ -2,6 +2,7 @@ pub mod git;
 
 use std::{process::{Command, Stdio}, fs, path::{PathBuf, Path}};
 
+use clap::Parser;
 use git::git_root;
 
 #[derive(Debug, Ord, Eq, PartialEq, PartialOrd)]
@@ -50,10 +51,10 @@ impl std::fmt::Display for Problem {
 }
 
 impl Problem {
-    fn test(name: String, path: PathBuf) -> Result<Problem, Box<dyn std::error::Error>>  {
+    fn test(name: String, path: PathBuf, no_cache: bool) -> Result<Problem, Box<dyn std::error::Error>>  {
         // caching
         let snt = path.join("done.snt");
-        if snt.exists() {
+        if !no_cache && snt.exists() {
             return Ok(Problem {
                 name,
                 path,
@@ -97,20 +98,25 @@ fn problems(root: &Path) -> Result<Vec<(String, PathBuf)>, Box<dyn std::error::E
     Ok(result)
 }
 
+#[derive(Debug, Parser)]
+struct Args {
+    /// Ignore done.snt files
+    #[clap(long)]
+    no_cache: bool
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>>  {
+    let Args { no_cache } = Args::parse();
+
     let root = git_root()?.join("exercism").join("rust");
 
     let mut results: Vec<Problem> = Vec::new();
     for (name, path) in problems(&root)? {
-        match Problem::test(name.clone(), path) {
-            Ok(problem) => {
-                print!(".");
-                results.push(problem);
-            },
-            Err(e) => println!("⚠️ {name} {e}"),
+        match Problem::test(name.clone(), path, no_cache) {
+            Ok(problem) => results.push(problem),
+            Err(e) => eprintln!("⚠️ {name} {e}"),
         }
     }
-    println!();
 
     results.sort();
 
