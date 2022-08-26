@@ -12,8 +12,7 @@ pub enum GameState {
 
 pub struct BowlingGame {
     frame_start: bool,
-    was_spare: bool,
-    strike_bonus: (u16, u16),
+    bonus_factor: (u16, u16),
     bonus_rolls: u8,
     pins_standing: u16,
     frames: usize,
@@ -24,8 +23,7 @@ impl BowlingGame {
     pub fn new() -> Self {
         Self {
             frame_start: true,
-            was_spare: false,
-            strike_bonus: (1, 1),
+            bonus_factor: (1, 1),
             bonus_rolls: 0,
             pins_standing: 10,
             frames: 0,
@@ -47,11 +45,11 @@ impl BowlingGame {
             let strike = self.frame_start && pins == 10;
             dbg!(strike);
             // always handle strike bonus modifier
-            self.score += pins * self.strike_bonus.0;
+            self.score += pins * self.bonus_factor.0;
             self.pins_standing -= pins;
 
             let strike_addon = if strike && self.frames < 9 { 1 } else { 0 };
-            self.strike_bonus = (self.strike_bonus.1 + strike_addon, 1 + strike_addon);
+            self.bonus_factor = (self.bonus_factor.1 + strike_addon, 1 + strike_addon);
 
             if self.bonus_rolls > 0 {
                 self.bonus_rolls -= 1;
@@ -68,12 +66,6 @@ impl BowlingGame {
                                 self.bonus_rolls = 2;
                             }
                         }
-
-                        if self.was_spare && self.frames != 10 {
-                            // bonus points from spare, unless last frame extra roll
-                            self.score += pins;
-                            self.was_spare = false;
-                        }
                     }
                     false => {
                         self.frames += 1;
@@ -83,7 +75,7 @@ impl BowlingGame {
                             if self.frames == 10 {
                                 self.bonus_rolls = 1;
                             } else {
-                                self.was_spare = true;
+                                self.bonus_factor.0 += 1;
                             }
                         }
                     }
