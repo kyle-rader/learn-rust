@@ -45,13 +45,13 @@ impl BowlingGame {
             return Err(Error::NotEnoughPinsLeft);
         }
 
-        let strike = self.frame_start && pins == 10;
-
-        // always handle strike bonus modifier
+        // Compute running score
         self.score += pins * self.bonus_factor.0;
         self.pins_standing -= pins;
 
-        let strike_bonus = if strike && self.frames < 9 { 1 } else { 0 };
+        // handle bonus modifier sliding window for next 2 rolls.
+        let strike = self.frame_start && pins == 10;
+        let strike_bonus = if strike && self.frames < 9 { 1 } else { 0 }; // no strike bonus on last frame.
         self.bonus_factor = (self.bonus_factor.1 + strike_bonus, 1 + strike_bonus);
 
         // Are we in bonus rolls?
