@@ -1,10 +1,10 @@
 pub fn square_of_sum(n: u32) -> u32 {
     let sum = (0..=n).sum::<u32>();
-    sum * sum
+    sum.pow(2)
 }
 
 pub fn sum_of_squares(n: u32) -> u32 {
-    (0..=n).map(|i| i * i).sum()
+    (0..=n).map(|i| i.pow(2)).sum()
 }
 
 pub fn difference(n: u32) -> u32 {
