@@ -1,27 +1,44 @@
 #[derive(Debug)]
-pub struct HighScores;
+pub struct HighScores {
+    scores: Vec<u32>,
+    scores_sorted: Vec<u32>,
+}
+
+const TOP_N: usize = 3;
 
 impl HighScores {
     pub fn new(scores: &[u32]) -> Self {
-        unimplemented!(
-            "Construct a HighScores struct, given the scores: {:?}",
-            scores
-        )
+        HighScores {
+            scores: scores.into(),
+            scores_sorted: HighScores::top_n(scores, TOP_N),
+        }
     }
 
     pub fn scores(&self) -> &[u32] {
-        unimplemented!("Return all the scores as a slice")
+        self.scores.as_slice()
     }
 
     pub fn latest(&self) -> Option<u32> {
-        unimplemented!("Return the latest (last) score")
+        self.scores.iter().last().map(|v| *v)
     }
 
     pub fn personal_best(&self) -> Option<u32> {
-        unimplemented!("Return the highest score")
+        (!self.scores.is_empty()).then_some(self.scores.iter().fold(0, |acc, i| {
+            if i > &acc {
+                *i
+            } else {
+                acc
+            }
+        }))
     }
 
     pub fn personal_top_three(&self) -> Vec<u32> {
-        unimplemented!("Return 3 highest scores")
+        self.scores_sorted.iter().take(TOP_N).map(|i| *i).collect()
+    }
+
+    fn top_n(scores: &[u32], n: usize) -> Vec<u32> {
+        let mut scores: Vec<u32> = scores.clone().into();
+        scores.sort();
+        scores.iter().rev().take(n).map(|i| *i).collect()
     }
 }
