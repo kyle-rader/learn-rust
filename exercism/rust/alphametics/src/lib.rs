@@ -1,4 +1,7 @@
-use std::{collections::{HashMap, HashSet}, num::ParseIntError};
+use std::{
+    collections::{HashMap, HashSet},
+    num::ParseIntError,
+};
 
 use thiserror::Error;
 
@@ -17,10 +20,20 @@ pub fn solve(input: &str) -> Option<Key> {
     let mut letters_to_use: Vec<char> = chars_we_care_about(input).into_iter().collect();
     let mut numbers_in_use: HashSet<u8> = HashSet::new();
     let mut solution: Key = Key::new();
-    test_all_keys(input, &mut letters_to_use, &mut numbers_in_use, &mut solution)
+    test_all_keys(
+        input,
+        &mut letters_to_use,
+        &mut numbers_in_use,
+        &mut solution,
+    )
 }
 
-fn test_all_keys(input: &str, letters_to_use: &mut Vec<char>, numbers_in_use: &mut HashSet<u8>, solution: &mut Key) -> Option<Key> {
+fn test_all_keys(
+    input: &str,
+    letters_to_use: &mut Vec<char>,
+    numbers_in_use: &mut HashSet<u8>,
+    solution: &mut Key,
+) -> Option<Key> {
     if let Some(letter) = letters_to_use.pop() {
         // we a letter to iterate on
         for i in 0..=9 {
@@ -36,19 +49,17 @@ fn test_all_keys(input: &str, letters_to_use: &mut Vec<char>, numbers_in_use: &m
         }
         letters_to_use.push(letter);
         None
-    }
-    else {
+    } else {
         // base case, the solution is full and we can test it.
         match test_key(input, solution) {
             Ok(test_result) => {
                 if test_result {
                     Some(solution.clone())
-                }
-                else {
+                } else {
                     None
                 }
             }
-            Err(_) => None
+            Err(_) => None,
         }
     }
 }
@@ -82,8 +93,5 @@ pub fn eval(input: &str) -> Result<usize, MyParseError> {
 
 pub fn chars_we_care_about(input: &str) -> HashSet<char> {
     let skip_chars: HashSet<char> = HashSet::from([' ', '+', '=']);
-    input
-        .chars()
-        .filter(|c| !skip_chars.contains(c))
-        .collect()
+    input.chars().filter(|c| !skip_chars.contains(c)).collect()
 }
